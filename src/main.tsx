@@ -5,9 +5,9 @@ import { createRoot } from 'react-dom/client';
 import { ConfigProvider } from 'antd';
 import ZhCN from 'antd/locale/zh_CN';
 import { RouterProvider } from 'react-router-dom';
- 
-import routers from './router';
-import './renderer.scss';
+
+import "./main.scss";
+import routers from "./router";
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);

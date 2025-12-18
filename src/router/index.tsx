@@ -28,7 +28,7 @@ const BarcodeManage = lazy(() => import('@/pages/Barcode/Manage'));
 // Settings 模块
 const SettingsBasic = lazy(() => import('@/pages/Settings/Basic'));
 const SettingsSecurity = lazy(() => import('@/pages/Settings/Security'));
-const SettingsLogs = lazy(() => import('@/pages/Settings/Logs'));
+const SettingsLogs = lazy(() => import("@/pages/Settings/Basic"));
 
 const SmartserviceappDebugLogs = lazy(() => import('@/pages/smartserviceappDebug/Debuglogs'));
 const SmartserviceappDebugNetwork = lazy(() => import('@/pages/smartserviceappDebug/Network'));
