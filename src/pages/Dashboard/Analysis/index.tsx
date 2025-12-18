@@ -22,6 +22,8 @@ const DashboardAnalysis: React.FC = () => {
           padding: '40px',
           textAlign: 'center',
           background: '#fff',
+
+          
           borderRadius: '12px',
           minHeight: '400px',
           display: 'flex',
