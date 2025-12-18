@@ -1,7 +1,7 @@
 import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
+import eslintConfigPrettier from "eslint-config-prettier";
 import importPlugin from "eslint-plugin-import";
-import prettier from "eslint-plugin-prettier";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
@@ -19,6 +19,7 @@ export default [
       "coverage",
     ],
   },
+  eslintConfigPrettier,
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
@@ -41,7 +42,6 @@ export default [
       "react-refresh": reactRefresh,
       react,
       import: importPlugin,
-      prettier,
       "@typescript-eslint": tseslint,
     },
     settings: {
@@ -72,6 +72,7 @@ export default [
       "react/jsx-key": "error",
       // 使用 TypeScript 时不再强制要求 propTypes
       "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off",
 
       // TypeScript 相关规则
       "@typescript-eslint/explicit-function-return-type": "off",
@@ -87,12 +88,11 @@ export default [
           ignoreRestSiblings: true,
         },
       ],
-      ...reactHooks.configs.recommended.rules, //检查 React Hooks 的使用是否符合最佳实践
-      ...reactRefresh.configs.recommended.rules, //检查 React 组件是否只导出常量
-      ...react.configs.recommended.rules, //检查 React 组件是否只导出常量
-      ...importPlugin.configs.recommended.rules, //检查导入的顺序
-      ...prettier.configs.recommended.rules, //禁用与 Prettier 冲突的 ESLint 规则
-      ...tseslint.configs.recommended.rules, //检查 TypeScript 代码是否符合最佳实践
+      ...reactHooks.configs.recommended.rules, // 检查 React Hooks 的使用是否符合最佳实践
+      ...reactRefresh.configs.recommended.rules, // 检查 React 组件是否只导出常量
+      ...react.configs.recommended.rules,
+      ...importPlugin.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
 
       // 通用规则
       "no-console": ["warn", { allow: ["log", "warn"] }],
@@ -149,11 +149,7 @@ export default [
         },
       ],
 
-      // 代码风格
-      indent: ["error", 2, { SwitchCase: 1 }],
-      quotes: ["error", "double"],
-      semi: ["error", "always"],
-      "comma-dangle": ["error", "always-multiline"],
+      // 代码复杂度与长度（不与 Prettier 冲突）
       "max-lines": ["error", { max: 300 }],
       "max-len": [
         "error",
@@ -164,6 +160,7 @@ export default [
           ignoreComments: true,
         },
       ],
+
       // 命名规范
       camelcase: [
         "error",
@@ -194,7 +191,11 @@ export default [
         },
       ],
 
-      "react/react-in-jsx-scope": "off",
+      // 交给 Prettier 管的风格类规则全部关闭，避免重复 / 冲突
+      indent: "off",
+      quotes: "off",
+      semi: "off",
+      "comma-dangle": "off",
     },
   },
 ];
