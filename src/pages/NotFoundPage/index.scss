@@ -1,0 +1,661 @@
+.not-found-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: linear-gradient(135deg, #e8f0fe 0%, #f0f5ff 30%, #fafbff 100%);
+  padding: 40px 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(35, 127, 250, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(35, 127, 250, 0.35);
+    }
+  }
+
+  // 背景装饰图案
+  &-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .bg-pattern {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.4;
+    filter: blur(60px);
+
+    &-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(35, 127, 250, 0.3) 0%, transparent 70%);
+      top: -200px;
+      right: -100px;
+      animation: floatPattern 25s ease-in-out infinite;
+    }
+
+    &-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(30, 109, 216, 0.25) 0%, transparent 70%);
+      bottom: -150px;
+      left: -100px;
+      animation: floatPattern 30s ease-in-out infinite reverse;
+    }
+
+    &-3 {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(26, 95, 196, 0.2) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: floatPattern 20s ease-in-out infinite;
+    }
+
+    @keyframes floatPattern {
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+      50% {
+        transform: translate(30px, -30px) scale(1.1);
+      }
+    }
+  }
+
+  &-container {
+    width: 100%;
+    max-width: 900px;
+    position: relative;
+    z-index: 1;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow:
+      0 20px 60px rgba(35, 127, 250, 0.12),
+      0 8px 24px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(35, 127, 250, 0.05);
+    padding: 80px 60px;
+    box-sizing: border-box;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    margin: auto;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+    backdrop-filter: blur(10px);
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  }
+
+  // 插图区域
+  &-illustration {
+    margin-bottom: 50px;
+    position: relative;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+
+    .illustration-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    // 人物插图
+    .illustration-person {
+      position: relative;
+      z-index: 2;
+      animation: personFloat 3s ease-in-out infinite;
+
+      @keyframes personFloat {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .person-head {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #ffd89b 0%, #ffb347 100%);
+        border-radius: 50%;
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        animation: headShake 4s ease-in-out infinite;
+
+        @keyframes headShake {
+          0%,
+          100% {
+            transform: translateX(-50%) rotate(0deg);
+          }
+          25% {
+            transform: translateX(-50%) rotate(-5deg);
+          }
+          75% {
+            transform: translateX(-50%) rotate(5deg);
+          }
+        }
+      }
+
+      .person-body {
+        width: 60px;
+        height: 80px;
+        background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+        border-radius: 12px;
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border: 2px solid rgba(35, 127, 250, 0.1);
+      }
+
+      .person-box {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #d4a574 0%, #b8956a 100%);
+        border-radius: 6px;
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: boxMove 3s ease-in-out infinite;
+
+        @keyframes boxMove {
+          0%,
+          100% {
+            transform: translateX(-50%) rotate(0deg);
+          }
+          50% {
+            transform: translateX(-50%) rotate(-5deg) translateY(-5px);
+          }
+        }
+      }
+    }
+
+    // 问号图标
+    .illustration-question-mark {
+      position: absolute;
+      top: -80px;
+      right: 20%;
+      z-index: 3;
+      color: #237ffa;
+      font-size: 80px;
+      animation: questionPulse 2s ease-in-out infinite;
+      filter: drop-shadow(0 4px 12px rgba(35, 127, 250, 0.3));
+
+      @keyframes questionPulse {
+        0%,
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+        50% {
+          transform: scale(1.1) rotate(5deg);
+        }
+      }
+
+      .question-svg {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    // 网络图案
+    .illustration-network {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      transform: translateY(-50%);
+      z-index: 1;
+      opacity: 0.6;
+
+      .network-node {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #237ffa;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(35, 127, 250, 0.5);
+        animation: nodePulse 2s ease-in-out infinite;
+
+        @keyframes nodePulse {
+          0%,
+          100% {
+            transform: scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 1;
+          }
+        }
+
+        &-1 {
+          top: 0;
+          left: 0;
+          animation-delay: 0s;
+        }
+
+        &-2 {
+          top: 30px;
+          left: 40px;
+          animation-delay: 0.5s;
+        }
+
+        &-3 {
+          top: 60px;
+          left: 0;
+          animation-delay: 1s;
+        }
+
+        &-4 {
+          top: 30px;
+          left: -40px;
+          animation-delay: 1.5s;
+        }
+      }
+
+      .network-line {
+        position: absolute;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #237ffa, transparent);
+        opacity: 0.4;
+
+        &-1 {
+          top: 6px;
+          left: 6px;
+          width: 40px;
+          transform: rotate(45deg);
+          transform-origin: left center;
+        }
+
+        &-2 {
+          top: 36px;
+          left: 6px;
+          width: 40px;
+          transform: rotate(-45deg);
+          transform-origin: left center;
+        }
+
+        &-3 {
+          top: 6px;
+          left: -34px;
+          width: 40px;
+          transform: rotate(-45deg);
+          transform-origin: right center;
+        }
+      }
+    }
+
+    // 植物装饰
+    .illustration-plant {
+      position: absolute;
+      bottom: -20px;
+      right: 15%;
+      z-index: 2;
+
+      .plant-pot {
+        width: 30px;
+        height: 25px;
+        background: linear-gradient(135deg, #8b4513 0%, #654321 100%);
+        border-radius: 4px 4px 8px 8px;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          height: 4px;
+          background: linear-gradient(90deg, #a0522d, #8b4513, #a0522d);
+          border-radius: 2px;
+        }
+      }
+
+      .plant-leaf {
+        position: absolute;
+        border-radius: 50% 0;
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+        animation: leafSway 3s ease-in-out infinite;
+
+        @keyframes leafSway {
+          0%,
+          100% {
+            transform: rotate(0deg);
+          }
+          50% {
+            transform: rotate(5deg);
+          }
+        }
+
+        &-1 {
+          width: 20px;
+          height: 20px;
+          top: -25px;
+          left: 5px;
+          animation-delay: 0s;
+        }
+
+        &-2 {
+          width: 18px;
+          height: 18px;
+          top: -30px;
+          left: 12px;
+          animation-delay: 0.5s;
+        }
+
+        &-3 {
+          width: 16px;
+          height: 16px;
+          top: -28px;
+          left: 20px;
+          animation-delay: 1s;
+        }
+      }
+    }
+  }
+
+  // 内容区域
+  &-content {
+    text-align: center;
+    padding: 0;
+  }
+
+  .not-found-title {
+    display: inline-block;
+    font-size: 96px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #237ffa 0%, #1e6dd8 50%, #1a5fc4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    line-height: 1;
+    text-shadow: 0 8px 24px rgba(35, 127, 250, 0.25);
+    animation: titleGlow 3s ease-in-out infinite;
+    letter-spacing: -2px;
+
+    @keyframes titleGlow {
+      0%,
+      100% {
+        filter: drop-shadow(0 0 10px rgba(35, 127, 250, 0.3));
+      }
+      50% {
+        filter: drop-shadow(0 0 20px rgba(35, 127, 250, 0.5));
+      }
+    }
+  }
+
+  .not-found-subtitle {
+    display: block;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  &-description {
+    color: #6b7280;
+    font-size: 17px;
+    margin-bottom: 0 !important;
+    text-align: center;
+    line-height: 1.6;
+    letter-spacing: 0.3px;
+  }
+
+  &-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-top: 50px;
+  }
+
+  &-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  &-button-retry {
+    min-width: 140px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #237ffa 0%, #1e6dd8 100%);
+    border: none;
+    box-shadow:
+      0 6px 20px rgba(35, 127, 250, 0.35),
+      0 2px 8px rgba(35, 127, 250, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #2a8aff 0%, #2370e8 100%);
+      box-shadow:
+        0 8px 24px rgba(35, 127, 250, 0.45),
+        0 4px 12px rgba(35, 127, 250, 0.3);
+      transform: translateY(-3px);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+      box-shadow:
+        0 4px 12px rgba(35, 127, 250, 0.35),
+        0 2px 6px rgba(35, 127, 250, 0.2);
+    }
+  }
+
+  &-button-back,
+  &-button-home {
+    min-width: 160px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    color: #374151;
+    background: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(35, 127, 250, 0.1);
+      transform: translate(-50%, -50%);
+      transition:
+        width 0.4s,
+        height 0.4s;
+    }
+
+    &:hover {
+      border-color: #237ffa;
+      color: #237ffa;
+      background: rgba(35, 127, 250, 0.05);
+      transform: translateY(-3px);
+      box-shadow:
+        0 6px 20px rgba(35, 127, 250, 0.15),
+        0 2px 8px rgba(0, 0, 0, 0.08);
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+      box-shadow:
+        0 2px 8px rgba(35, 127, 250, 0.1),
+        0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .not-found-page {
+    padding: 20px 16px;
+
+    &-container {
+      padding: 50px 30px;
+      border-radius: 20px;
+      margin-top: 3vh;
+      margin-bottom: 3vh;
+    }
+
+    &-illustration {
+      height: 220px;
+      margin-bottom: 40px;
+
+      .illustration-person {
+        .person-head {
+          width: 40px;
+          height: 40px;
+          top: -50px;
+        }
+
+        .person-body {
+          width: 50px;
+          height: 70px;
+        }
+
+        .person-box {
+          width: 35px;
+          height: 35px;
+        }
+      }
+
+      .illustration-question-mark {
+        top: -60px;
+        right: 15%;
+        font-size: 60px;
+
+        .question-svg {
+          width: 60px;
+          height: 60px;
+        }
+      }
+
+      .illustration-network {
+        left: 5%;
+      }
+
+      .illustration-plant {
+        right: 10%;
+        bottom: -15px;
+      }
+    }
+
+    .not-found-title {
+      font-size: 72px;
+    }
+
+    .not-found-subtitle {
+      font-size: 22px;
+    }
+
+    &-button-retry,
+    &-button-back,
+    &-button-home {
+      width: 100%;
+      min-width: auto;
+    }
+
+    &-buttons {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .not-found-page {
+    &-container {
+      padding: 40px 24px;
+    }
+
+    &-illustration {
+      height: 180px;
+    }
+
+    .not-found-title {
+      font-size: 64px;
+    }
+
+    .not-found-subtitle {
+      font-size: 20px;
+    }
+  }
+}

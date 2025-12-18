@@ -1,10 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { Suspense } from 'react';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import { createRoot } from 'react-dom/client';
+
+import { ConfigProvider } from 'antd';
+import ZhCN from 'antd/locale/zh_CN';
+import { RouterProvider } from 'react-router-dom';
+
+import routers from './router';
+import './main.scss';
+
+const container = document.getElementById('root') as HTMLElement;
+const root = createRoot(container);
+
+root.render(
+  <ConfigProvider locale={ZhCN}>
+    <Suspense fallback={<div>...加载中</div>}>
+      <RouterProvider router={routers} />
+    </Suspense>
+  </ConfigProvider>,
+);
