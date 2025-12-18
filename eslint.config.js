@@ -5,6 +5,7 @@ import importPlugin from "eslint-plugin-import";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import unusedImports from "eslint-plugin-unused-imports";
 import globals from "globals";
 
 export default [
@@ -14,22 +15,25 @@ export default [
       "node_modules",
       "*.min.js",
       "*.d.ts",
-      "vite.configPlugins.ts",
       "build",
       "coverage",
+      "public/**",
+      "config/**",
     ],
   },
+  // 关闭与 Prettier 冲突的规则，格式完全交给 Prettier
   eslintConfigPrettier,
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        ecmaVersion: 2020,
+        ecmaVersion: 2022,
         sourceType: "module",
         ecmaFeatures: {
           jsx: true,
         },
+        project: "./tsconfig.json",
       },
       globals: {
         ...globals.browser,
@@ -43,6 +47,7 @@ export default [
       react,
       import: importPlugin,
       "@typescript-eslint": tseslint,
+      "unused-imports": unusedImports,
     },
     settings: {
       react: {
@@ -54,15 +59,13 @@ export default [
           project: "./tsconfig.json",
         },
         alias: {
-          map: [
-            ["@", "./src"], // 假设你的项目中 '@' 别名指向 'src' 目录
-          ],
-          extensions: [".js", ".jsx", ".ts", ".tsx"],
+          map: [["@", "./src"]],
+          extensions: [".js", ".jsx", ".ts", ".tsx", ".json", ".less", ".scss"],
         },
       },
     },
     rules: {
-      // React 相关规则
+      // ========= React 相关 =========
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
@@ -70,106 +73,87 @@ export default [
       "react/jsx-uses-vars": "error",
       "react/jsx-no-undef": "error",
       "react/jsx-key": "error",
-      // 使用 TypeScript 时不再强制要求 propTypes
       "react/prop-types": "off",
       "react/react-in-jsx-scope": "off",
-
-      // TypeScript 相关规则
-      "@typescript-eslint/explicit-function-return-type": "off",
-      // 大型业务项目中对 any 保持一定弹性，避免开发体验过差
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/explicit-module-boundary-types": "warn",
-
-      "@typescript-eslint/no-unused-vars": [
+      "react/display-name": "off",
+      "react/jsx-curly-brace-presence": ["error", { props: "never", children: "never" }],
+      "react/jsx-boolean-value": ["error", "never"],
+      "react/self-closing-comp": "error",
+      "react/jsx-sort-props": [
         "error",
         {
-          varsIgnorePattern: "^React$",
-          argsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
+          callbacksLast: true,
+          shorthandFirst: true,
+          ignoreCase: true,
+          reservedFirst: true,
         },
       ],
-      ...reactHooks.configs.recommended.rules, // 检查 React Hooks 的使用是否符合最佳实践
-      ...reactRefresh.configs.recommended.rules, // 检查 React 组件是否只导出常量
-      ...react.configs.recommended.rules,
-      ...importPlugin.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
 
-      // 通用规则
-      "no-console": ["warn", { allow: ["log", "warn"] }],
-      "no-debugger": "warn",
-      "no-unused-vars": "off", // 使用 TypeScript 的规则替代
-      "prefer-const": "error",
-      "no-var": "error",
-
-      // 最佳实践
-      eqeqeq: ["error", "always"],
-      "no-multiple-empty-lines": ["error", { max: 1 }],
-      // 'arrow-body-style': ['error', 'as-needed', { requireReturnForObjectLiteral: true }],
-      "object-shorthand": ["error", "always"],
-      "prefer-template": "error",
-      "no-param-reassign": "error",
-
-      // 导入规则
-      "import/order": [
+      // ========= TypeScript 严格规则 =========
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/explicit-module-boundary-types": "error",
+      "@typescript-eslint/explicit-member-accessibility": [
         "error",
         {
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-            "object",
-            "type",
-          ],
-          pathGroups: [
-            {
-              pattern: "react",
-              group: "external",
-              position: "before",
-            },
-            {
-              pattern: "{react-dom,react-router-dom}",
-              group: "external",
-              position: "before",
-            },
-            {
-              pattern: "@/**",
-              group: "internal",
-              position: "after",
-            },
-          ],
-          pathGroupsExcludedImportTypes: ["react", "react-dom", "react-router-dom"],
-          "newlines-between": "always",
-          alphabetize: {
-            order: "asc",
-            caseInsensitive: true,
+          accessibility: "explicit",
+          overrides: {
+            constructors: "no-public",
+            accessors: "explicit",
+            methods: "explicit",
+            properties: "explicit",
+            parameterProperties: "explicit",
           },
         },
       ],
 
-      // 代码复杂度与长度（不与 Prettier 冲突）
-      "max-lines": ["error", { max: 300 }],
-      "max-len": [
-        "error",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off", // 交给 unused-imports 管
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
         {
-          code: 100,
-          ignoreStrings: true,
-          ignoreTemplateLiterals: true,
-          ignoreComments: true,
+          vars: "all",
+          varsIgnorePattern: "^React$|^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
         },
       ],
 
-      // 命名规范
-      camelcase: [
+      "@typescript-eslint/explicit-function-return-type": [
         "error",
         {
-          properties: "never",
-          ignoreDestructuring: true,
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "as",
+          objectLiteralTypeAssertions: "never",
+        },
+      ],
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
+      "@typescript-eslint/await-thenable": "error",
+      "@typescript-eslint/no-unsafe-argument": "error",
+      "no-return-await": "off",
+      "@typescript-eslint/return-await": ["error", "always"],
+
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/no-empty-function": "warn",
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        {
+          "ts-ignore": "allow-with-description",
+          minimumDescriptionLength: 10,
         },
       ],
 
+      // ========= 命名 & 成员顺序 =========
       "@typescript-eslint/naming-convention": [
         "error",
         {
@@ -188,10 +172,101 @@ export default [
         {
           selector: "enum",
           format: ["PascalCase"],
+          prefix: ["E"],
+        },
+        {
+          selector: "variable",
+          format: ["camelCase", "UPPER_CASE"],
+        },
+        {
+          selector: "function",
+          format: ["camelCase"],
+        },
+      ],
+      "@typescript-eslint/member-ordering": [
+        "error",
+        {
+          default: {
+            memberTypes: [
+              "signature",
+              "public-static-field",
+              "protected-static-field",
+              "private-static-field",
+              "public-instance-field",
+              "protected-instance-field",
+              "private-instance-field",
+              "constructor",
+              "public-static-method",
+              "protected-static-method",
+              "private-static-method",
+              "public-instance-method",
+              "protected-instance-method",
+              "private-instance-method",
+            ],
+          },
         },
       ],
 
-      // 交给 Prettier 管的风格类规则全部关闭，避免重复 / 冲突
+      // ========= 通用 & 最佳实践 =========
+      "no-console": ["warn", { allow: ["warn", "error", "info", "log"] }],
+      "no-debugger": "warn",
+      "prefer-const": "error",
+      "no-var": "error",
+      "no-duplicate-imports": "error",
+      curly: ["error", "all"],
+      eqeqeq: ["error", "always"],
+      "no-multiple-empty-lines": ["error", { max: 1 }],
+      "object-shorthand": ["error", "always"],
+      "prefer-template": "error",
+      "no-param-reassign": "error",
+
+      // ========= 导入规则 =========
+      "import/no-unresolved": "error",
+      "import/named": "error",
+      "import/default": "error",
+      "import/namespace": "error",
+      "import/order": [
+        "error",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            ["parent", "sibling"],
+            "index",
+            "object",
+            "type",
+          ],
+          pathGroups: [
+            { pattern: "react", group: "builtin", position: "before" },
+            {
+              pattern: "{react-dom,react-router-dom}",
+              group: "external",
+              position: "before",
+            },
+            { pattern: "@/**", group: "internal", position: "after" },
+          ],
+          pathGroupsExcludedImportTypes: ["react", "react-dom", "react-router-dom"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
+
+      // ========= 复杂度 & 风格（不和 Prettier 冲突）=========
+      "max-lines": ["error", { max: 500 }],
+      "max-lines-per-function": ["error", { max: 200 }],
+      "max-params": ["error", { max: 4 }],
+      "max-len": [
+        "error",
+        {
+          code: 120,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreComments: true,
+        },
+      ],
+
+      // 这些细节交给 Prettier，所以这里关掉
       indent: "off",
       quotes: "off",
       semi: "off",
