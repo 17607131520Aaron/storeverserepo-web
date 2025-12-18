@@ -70,11 +70,13 @@ export default [
       "react/jsx-uses-vars": "error",
       "react/jsx-no-undef": "error",
       "react/jsx-key": "error",
-      "react/prop-types": "error",
+      // 使用 TypeScript 时不再强制要求 propTypes
+      "react/prop-types": "off",
 
       // TypeScript 相关规则
       "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/no-explicit-any": "error",
+      // 大型业务项目中对 any 保持一定弹性，避免开发体验过差
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-module-boundary-types": "warn",
 
       "@typescript-eslint/no-unused-vars": [
