@@ -228,27 +228,51 @@ export default [
       "import/order": [
         "error",
         {
+          // 导入顺序：
+          // 1. Node/浏览器内置模块（builtin）
+          // 2. 第三方依赖（external），其中 react 始终在最顶部
+          // 3. 项目内部别名（internal，如 @/**）
+          // 4. 当前项目内的相对路径（parent/sibling）
+          // 5. 样式文件（css/scss/less）始终在最后
           groups: [
             "builtin",
             "external",
             "internal",
-            ["parent", "sibling"],
+            "parent",
+            "sibling",
             "index",
             "object",
             "type",
           ],
           pathGroups: [
-            { pattern: "react", group: "builtin", position: "before" },
+            {
+              pattern: "react",
+              group: "external",
+              position: "before",
+            },
             {
               pattern: "{react-dom,react-router-dom}",
               group: "external",
               position: "before",
             },
-            { pattern: "@/**", group: "internal", position: "after" },
+            {
+              pattern: "@/**",
+              group: "internal",
+              position: "after",
+            },
+            {
+              // 样式始终放在最后
+              pattern: "**/*.{css,scss,less}",
+              group: "index",
+              position: "after",
+            },
           ],
           pathGroupsExcludedImportTypes: ["react", "react-dom", "react-router-dom"],
           "newlines-between": "always",
-          alphabetize: { order: "asc", caseInsensitive: true },
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
         },
       ],
 
