@@ -6,14 +6,17 @@ import { Card, Descriptions, Radio, Space, Typography } from "antd";
 import { useThemeStore } from "@/store/theme/theme";
 import { getCurrentTheme, type ThemeMode } from "@/utils/theme";
 
+import type { RadioChangeEvent } from "antd";
+
 const { Title } = Typography;
 
 const SettingsBasic: React.FC = () => {
   const { theme, setTheme } = useThemeStore();
   const currentTheme = getCurrentTheme();
 
-  const handleThemeChange = (e: { target: { value: ThemeMode } }): void => {
-    setTheme(e.target.value);
+  const handleThemeChange = (e: RadioChangeEvent): void => {
+    const value = e.target.value as ThemeMode;
+    setTheme(value);
   };
 
   return (
