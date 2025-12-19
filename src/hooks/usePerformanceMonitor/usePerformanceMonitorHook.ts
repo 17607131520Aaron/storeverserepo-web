@@ -1,3 +1,5 @@
+import { savePerformanceMetric } from "@/utils/indexedDBStorage";
+
 interface IPerformanceData {
   dnsTime: number;
   tcpTime: number;
@@ -21,7 +23,6 @@ export interface IPagePerformanceReport extends IPerformanceData {
 type PagePerformanceReporter = (payload: IPagePerformanceReport) => void | Promise<void>;
 
 let pagePerformanceReporter: PagePerformanceReporter | null = null;
-let hasReportedOnce = false;
 
 export const setPagePerformanceReporter = (reporter: PagePerformanceReporter): void => {
   pagePerformanceReporter = reporter;
@@ -129,23 +130,23 @@ export const usePerformanceMonitor = (): {
         metrics.lcp < 2500 ? "✅" : "⚠️",
       );
     }
+    const payload: IPagePerformanceReport = {
+      ...metrics,
+      url: typeof window !== "undefined" && window.location ? window.location.href : "",
+      timestamp: Date.now(),
+      pageId,
+    };
 
-    // 首次渲染性能上报（只上报一次，预留接入真实埋点）
-    if (!hasReportedOnce && pagePerformanceReporter) {
-      hasReportedOnce = true;
-      const payload: IPagePerformanceReport = {
-        ...metrics,
-        url: typeof window !== "undefined" && window.location ? window.location.href : "",
-        timestamp: Date.now(),
-        pageId,
-      };
-
-      try {
+    try {
+      if (pagePerformanceReporter) {
         void pagePerformanceReporter(payload);
-      } catch (error) {
-        console.warn("页面性能指标上报失败（已忽略）：", error);
       }
+    } catch (error) {
+      console.warn("页面性能指标上报失败（已忽略）：", error);
     }
+
+    // 始终写入 IndexedDB，作为本地缓存，超过 1000 条由存储层自动清理
+    void savePerformanceMetric(payload);
   };
 
   return {
