@@ -201,6 +201,10 @@ const AppContent: React.FC = () => {
               </div>
             </div>
 
+            <div className="asp-comprehension-home-header-center">
+              <TabsBar />
+            </div>
+
             <div className="asp-comprehension-home-header-right">
               <Dropdown
                 menu={{
@@ -217,8 +221,6 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         </Header>
-
-        <TabsBar />
 
         <Content className="asp-comprehension-home-content">
           <div className="asp-comprehension-home-content-wrapper">

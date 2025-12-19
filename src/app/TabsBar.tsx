@@ -6,8 +6,7 @@ import { useTabs } from "./TabsContext";
 import "./TabsBar.scss";
 
 const TabsBar: React.FC = () => {
-  const { tabs, activeKey, setActiveTab, removeTab, closeOtherTabs, closeAllTabs, refreshTab } =
-    useTabs();
+  const { tabs, activeKey, setActiveTab, removeTab, closeOtherTabs, closeAllTabs, refreshTab } = useTabs();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLDivElement>(null);
   const [refreshingTabs, setRefreshingTabs] = useState<Set<string>>(new Set());
@@ -29,7 +28,7 @@ const TabsBar: React.FC = () => {
   }, [activeKey]);
 
   // 处理标签点击
-  const handleTabClick = (tab: typeof tabs[0], e: React.MouseEvent) => {
+  const handleTabClick = (tab: (typeof tabs)[0], e: React.MouseEvent): void => {
     e.stopPropagation();
     if (tab.key !== activeKey) {
       setActiveTab(tab.key);
@@ -37,7 +36,7 @@ const TabsBar: React.FC = () => {
   };
 
   // 处理刷新按钮点击
-  const handleRefresh = (tab: typeof tabs[0], e: React.MouseEvent) => {
+  const handleRefresh = (tab: (typeof tabs)[0], e: React.MouseEvent): void => {
     e.stopPropagation();
     setRefreshingTabs((prev) => new Set(prev).add(tab.key));
     refreshTab(tab.key);
@@ -52,13 +51,13 @@ const TabsBar: React.FC = () => {
   };
 
   // 处理关闭按钮点击
-  const handleClose = (tab: typeof tabs[0], e: React.MouseEvent) => {
+  const handleClose = (tab: (typeof tabs)[0], e: React.MouseEvent): void => {
     e.stopPropagation();
     removeTab(tab.key);
   };
 
   // 处理右键菜单
-  const handleContextMenu = (tab: typeof tabs[0], e: React.MouseEvent) => {
+  const handleContextMenu = (tab: (typeof tabs)[0], e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -91,11 +90,7 @@ const TabsBar: React.FC = () => {
                   <ReloadOutlined />
                 </span>
                 {tab.closable && (
-                  <span
-                    className="asp-tabs-bar-item-close"
-                    title="关闭标签"
-                    onClick={(e) => handleClose(tab, e)}
-                  >
+                  <span className="asp-tabs-bar-item-close" title="关闭标签" onClick={(e) => handleClose(tab, e)}>
                     <CloseOutlined />
                   </span>
                 )}
@@ -104,7 +99,7 @@ const TabsBar: React.FC = () => {
           );
         })}
       </div>
-      {tabs.length > 1 && (
+      {/* {tabs.length > 1 && (
         <div className="asp-tabs-bar-actions">
           <span
             className="asp-tabs-bar-action-item"
@@ -114,7 +109,7 @@ const TabsBar: React.FC = () => {
             关闭全部
           </span>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
