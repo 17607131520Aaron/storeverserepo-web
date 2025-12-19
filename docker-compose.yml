@@ -1,0 +1,83 @@
+version: "3.8"
+
+# 多环境 Docker Compose 配置
+# 使用方式：
+#   docker-compose --profile dev up -d      # 开发环境
+#   docker-compose --profile test up -d     # 测试环境
+#   docker-compose --profile prod up -d     # 生产环境（默认）
+#   docker-compose up -d                    # 默认使用生产环境
+
+services:
+  # 开发环境服务
+  web-dev:
+    profiles:
+      - dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: dev
+    # 镜像名称可以通过环境变量 IMAGE_NAME 覆盖，默认使用 storeverserepo-web:dev
+    image: ${IMAGE_NAME:-storeverserepo-web:dev}
+    container_name: storeverserepo-web-dev
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    # 如果需要连接后端服务，可以取消注释以下配置
+    # networks:
+    #   - app-network
+    # depends_on:
+    #   - backend
+
+  # 测试环境服务
+  web-test:
+    profiles:
+      - test
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: test
+    # 镜像名称可以通过环境变量 IMAGE_NAME 覆盖，默认使用 storeverserepo-web:test
+    image: ${IMAGE_NAME:-storeverserepo-web:test}
+    container_name: storeverserepo-web-test
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=test
+    # 如果需要连接后端服务，可以取消注释以下配置
+    # networks:
+    #   - app-network
+    # depends_on:
+    #   - backend
+
+  # 生产环境服务（默认）
+  web-prod:
+    profiles:
+      - prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_MODE: prod
+    # 镜像名称可以通过环境变量 IMAGE_NAME 覆盖，默认使用 storeverserepo-web:prod
+    image: ${IMAGE_NAME:-storeverserepo-web:prod}
+    container_name: storeverserepo-web-prod
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    # 如果需要连接后端服务，可以取消注释以下配置
+    # networks:
+    #   - app-network
+    # depends_on:
+    #   - backend
+
+# 如果需要连接后端服务，可以取消注释以下配置
+# networks:
+#   app-network:
+#     driver: bridge
