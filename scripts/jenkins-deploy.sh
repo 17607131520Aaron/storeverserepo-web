@@ -67,18 +67,21 @@ case $ENV in
         BUILD_CMD="pnpm build:dev"
         DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-dev}"
         BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
+        APP_URL="${APP_URL:-http://localhost:8080}"
         ;;
     test)
         BUILD_MODE="test"
         BUILD_CMD="pnpm build:test"
         DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-test}"
         BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
+        APP_URL="${APP_URL:-http://localhost:8081}"
         ;;
     prod)
         BUILD_MODE="production"
         BUILD_CMD="pnpm build:prod"
         DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html}"
         BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
+        APP_URL="${APP_URL:-http://localhost}"
         ;;
 esac
 
@@ -103,86 +106,259 @@ echo -e "${GREEN}========================================${NC}"
 
 # 检查 Jenkins 服务
 check_jenkins_service() {
+    echo -e "${BLUE}========================================${NC}"
     echo -e "${BLUE}检查 Jenkins 服务状态...${NC}"
+    echo -e "${BLUE}========================================${NC}"
 
-    JENKINS_FOUND=false
-    JENKINS_STATUS="未运行"
+    JENKINS_INSTALLED=false
+    JENKINS_RUNNING=false
+    JENKINS_PORT=""
+    JENKINS_URL=""
+    JENKINS_SERVICE_STATUS="未安装"
 
-    # 方法1: 检查 systemd 服务状态
+    # 检查1: Jenkins 是否安装 - 检查 systemd 服务文件
     if command -v systemctl &> /dev/null; then
-        if systemctl list-units --type=service --all 2>/dev/null | grep -q "jenkins.service"; then
+        if systemctl list-unit-files --type=service --all 2>/dev/null | grep -q "jenkins.service"; then
+            JENKINS_INSTALLED=true
+            JENKINS_SERVICE_STATUS="已安装 (systemd)"
+
+            # 检查服务状态
             if systemctl is-active --quiet jenkins 2>/dev/null; then
-                JENKINS_FOUND=true
-                JENKINS_STATUS="运行中 (systemd)"
-                JENKINS_VERSION=$(systemctl show jenkins --property=ActiveState --value 2>/dev/null || echo "")
+                JENKINS_RUNNING=true
+                JENKINS_SERVICE_STATUS="运行中 (systemd)"
+            elif systemctl is-enabled --quiet jenkins 2>/dev/null; then
+                JENKINS_SERVICE_STATUS="已安装但未运行 (systemd)"
             fi
         fi
     fi
 
-    # 方法2: 检查 Jenkins 进程
-    if [ "$JENKINS_FOUND" = false ]; then
-        if pgrep -f "jenkins" > /dev/null 2>&1 || ps aux | grep -v grep | grep -q "[j]enkins"; then
-            JENKINS_FOUND=true
-            JENKINS_STATUS="运行中 (进程)"
+    # 检查2: Jenkins 是否安装 - 检查可执行文件
+    if [ "$JENKINS_INSTALLED" = false ]; then
+        if command -v jenkins &> /dev/null || [ -f "/usr/bin/jenkins" ] || [ -f "/usr/local/bin/jenkins" ]; then
+            JENKINS_INSTALLED=true
+            JENKINS_SERVICE_STATUS="已安装 (可执行文件)"
         fi
     fi
 
-    # 方法3: 检查 Jenkins 端口（默认 8080）
-    if [ "$JENKINS_FOUND" = false ]; then
+    # 检查3: Jenkins 是否安装 - 检查 JENKINS_HOME
+    if [ "$JENKINS_INSTALLED" = false ] && [ -n "${JENKINS_HOME}" ]; then
+        if [ -d "${JENKINS_HOME}" ]; then
+            JENKINS_INSTALLED=true
+            JENKINS_SERVICE_STATUS="已安装 (JENKINS_HOME=${JENKINS_HOME})"
+        fi
+    fi
+
+    # 检查4: Jenkins 是否安装 - 检查常见安装目录
+    if [ "$JENKINS_INSTALLED" = false ]; then
+        if [ -d "/var/lib/jenkins" ] || [ -d "/usr/share/jenkins" ] || [ -d "/opt/jenkins" ]; then
+            JENKINS_INSTALLED=true
+            JENKINS_SERVICE_STATUS="已安装 (目录存在)"
+        fi
+    fi
+
+    # 检查5: Jenkins 是否运行 - 检查进程
+    if pgrep -f "jenkins" > /dev/null 2>&1 || ps aux | grep -v grep | grep -q "[j]enkins"; then
+        JENKINS_RUNNING=true
+        if [ "$JENKINS_INSTALLED" = false ]; then
+            JENKINS_INSTALLED=true
+            JENKINS_SERVICE_STATUS="运行中 (进程)"
+        fi
+    fi
+
+    # 检测 Jenkins 端口
+    JENKINS_PORTS=(8080 8081 8082 9080 9081)
+    for port in "${JENKINS_PORTS[@]}"; do
+        # 检查端口是否监听
+        PORT_LISTENING=false
         if command -v netstat &> /dev/null; then
-            if netstat -tuln 2>/dev/null | grep -q ":8080 "; then
-                JENKINS_FOUND=true
-                JENKINS_STATUS="运行中 (端口 8080)"
+            if netstat -tuln 2>/dev/null | grep -q ":${port} "; then
+                PORT_LISTENING=true
             fi
         elif command -v ss &> /dev/null; then
-            if ss -tuln 2>/dev/null | grep -q ":8080 "; then
-                JENKINS_FOUND=true
-                JENKINS_STATUS="运行中 (端口 8080)"
+            if ss -tuln 2>/dev/null | grep -q ":${port} "; then
+                PORT_LISTENING=true
             fi
         fi
-    fi
 
-    # 方法4: 检查 Jenkins HTTP 接口
-    if [ "$JENKINS_FOUND" = false ]; then
-        if command -v curl &> /dev/null; then
-            if curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://localhost:8080" 2>/dev/null | grep -q "200\|403\|401"; then
-                JENKINS_FOUND=true
-                JENKINS_STATUS="运行中 (HTTP 接口)"
+        # 检查 HTTP 接口
+        if [ "$PORT_LISTENING" = true ]; then
+            HTTP_RESPONSE=""
+            if command -v curl &> /dev/null; then
+                HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://localhost:${port}" 2>/dev/null || echo "")
+            elif command -v wget &> /dev/null; then
+                if wget -q --spider --timeout=2 "http://localhost:${port}" 2>/dev/null; then
+                    HTTP_RESPONSE="200"
+                fi
             fi
-        elif command -v wget &> /dev/null; then
-            if wget -q --spider --timeout=2 "http://localhost:8080" 2>/dev/null; then
-                JENKINS_FOUND=true
-                JENKINS_STATUS="运行中 (HTTP 接口)"
-            fi
-        fi
-    fi
 
-    # 方法5: 检查 JENKINS_HOME 环境变量
-    if [ "$JENKINS_FOUND" = false ] && [ -n "${JENKINS_HOME}" ]; then
-        if [ -d "${JENKINS_HOME}" ]; then
-            JENKINS_FOUND=true
-            JENKINS_STATUS="已配置 (JENKINS_HOME=${JENKINS_HOME})"
+            # 检查是否是 Jenkins（通过响应头或内容）
+            if [ -n "$HTTP_RESPONSE" ] && echo "$HTTP_RESPONSE" | grep -q "200\|403\|401"; then
+                # 进一步验证是否是 Jenkins
+                if command -v curl &> /dev/null; then
+                    RESPONSE_BODY=$(curl -s --connect-timeout 2 "http://localhost:${port}" 2>/dev/null || echo "")
+                    if echo "$RESPONSE_BODY" | grep -qi "jenkins"; then
+                        JENKINS_PORT=$port
+                        JENKINS_URL="http://localhost:${port}"
+                        JENKINS_RUNNING=true
+                        break
+                    fi
+                else
+                    # 如果没有 curl，假设是 Jenkins
+                    JENKINS_PORT=$port
+                    JENKINS_URL="http://localhost:${port}"
+                    JENKINS_RUNNING=true
+                    break
+                fi
+            fi
         fi
-    fi
+    done
 
     # 输出检查结果
-    if [ "$JENKINS_FOUND" = true ]; then
-        echo -e "${GREEN}✓ Jenkins 服务: ${JENKINS_STATUS}${NC}"
-
-        # 如果设置了跳过检查的环境变量，则允许继续
-        if [ "${SKIP_JENKINS_CHECK:-false}" = "true" ]; then
-            echo -e "${YELLOW}⚠ 已检测到 Jenkins 服务，但 SKIP_JENKINS_CHECK=true，继续执行${NC}"
-        fi
+    echo -e "${BLUE}Jenkins 安装状态:${NC}"
+    if [ "$JENKINS_INSTALLED" = true ]; then
+        echo -e "${GREEN}  ✓ ${JENKINS_SERVICE_STATUS}${NC}"
     else
-        echo -e "${YELLOW}⚠ Jenkins 服务: ${JENKINS_STATUS}${NC}"
+        echo -e "${RED}  ✗ 未安装${NC}"
+    fi
 
-        # 如果设置了必须检查的环境变量，则退出
-        if [ "${REQUIRE_JENKINS:-false}" = "true" ]; then
-            echo -e "${RED}错误: 未检测到 Jenkins 服务，且 REQUIRE_JENKINS=true${NC}"
-            echo -e "${YELLOW}提示: 如果不需要检查 Jenkins，请设置 REQUIRE_JENKINS=false${NC}"
+    echo -e "${BLUE}Jenkins 运行状态:${NC}"
+    if [ "$JENKINS_RUNNING" = true ]; then
+        echo -e "${GREEN}  ✓ 运行中${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ 未运行${NC}"
+    fi
+
+    if [ -n "$JENKINS_PORT" ]; then
+        echo -e "${BLUE}Jenkins 端口:${NC}"
+        echo -e "${GREEN}  ✓ ${JENKINS_PORT}${NC}"
+    else
+        echo -e "${BLUE}Jenkins 端口:${NC}"
+        echo -e "${YELLOW}  ⚠ 未检测到${NC}"
+    fi
+
+    if [ -n "$JENKINS_URL" ]; then
+        echo -e "${BLUE}Jenkins 访问地址:${NC}"
+        echo -e "${GREEN}  ✓ ${JENKINS_URL}${NC}"
+    else
+        echo -e "${BLUE}Jenkins 访问地址:${NC}"
+        echo -e "${YELLOW}  ⚠ 未检测到（默认: http://localhost:8080）${NC}"
+        # 不设置默认值，保持为空，以便后续检查能正确识别
+    fi
+
+    echo -e "${BLUE}========================================${NC}"
+
+    # 如果设置了跳过检查的环境变量
+    if [ "${SKIP_JENKINS_CHECK:-false}" = "true" ]; then
+        echo -e "${YELLOW}⚠ SKIP_JENKINS_CHECK=true，跳过 Jenkins 检查${NC}"
+        return 0
+    fi
+
+    # 判断 Jenkins 是否可用（必须同时满足：已安装、运行中、端口和URL可访问）
+    JENKINS_AVAILABLE=false
+    if [ "$JENKINS_INSTALLED" = true ] && [ "$JENKINS_RUNNING" = true ] && [ -n "$JENKINS_PORT" ] && [ -n "$JENKINS_URL" ]; then
+        JENKINS_AVAILABLE=true
+    fi
+
+    # 如果 Jenkins 不可用（未安装、未运行、或端口/URL未检测到），给出警告并退出构建
+    if [ "$JENKINS_AVAILABLE" = false ]; then
+        echo -e "${RED}========================================${NC}"
+        echo -e "${RED}警告: Jenkins 服务未检测到，无法继续构建！${NC}"
+        echo -e "${RED}========================================${NC}"
+        echo ""
+
+        if [ "$JENKINS_INSTALLED" = false ]; then
+            echo -e "${YELLOW}Jenkins 未安装，请先安装 Jenkins：${NC}"
+            echo ""
+            echo -e "${BLUE}安装方法（Ubuntu/Debian）：${NC}"
+            echo -e "  1. 添加 Jenkins 仓库密钥："
+            echo -e "     ${GREEN}curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null${NC}"
+            echo -e "  2. 添加 Jenkins 仓库："
+            echo -e "     ${GREEN}echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null${NC}"
+            echo -e "  3. 更新包列表并安装："
+            echo -e "     ${GREEN}sudo apt-get update${NC}"
+            echo -e "     ${GREEN}sudo apt-get install jenkins${NC}"
+            echo ""
+            echo -e "${BLUE}安装方法（CentOS/RHEL）：${NC}"
+            echo -e "  1. 添加 Jenkins 仓库："
+            echo -e "     ${GREEN}sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo${NC}"
+            echo -e "     ${GREEN}sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key${NC}"
+            echo -e "  2. 安装 Jenkins："
+            echo -e "     ${GREEN}sudo yum install jenkins${NC}"
+            echo ""
+            echo -e "${BLUE}安装方法（macOS）：${NC}"
+            echo -e "  ${GREEN}brew install jenkins-lts${NC}"
+            echo ""
+        fi
+
+        if [ "$JENKINS_INSTALLED" = true ] && [ "$JENKINS_RUNNING" = false ]; then
+            echo -e "${YELLOW}Jenkins 已安装但未运行，请启动 Jenkins 服务：${NC}"
+            echo ""
+
+            if command -v systemctl &> /dev/null; then
+                echo -e "${BLUE}使用 systemd 启动（Linux）：${NC}"
+                echo -e "  ${GREEN}sudo systemctl start jenkins${NC}"
+                echo -e "  ${GREEN}sudo systemctl enable jenkins  # 设置开机自启${NC}"
+                echo -e "  ${GREEN}sudo systemctl status jenkins   # 查看状态${NC}"
+                echo ""
+            fi
+
+            if command -v service &> /dev/null; then
+                echo -e "${BLUE}使用 service 启动（Linux）：${NC}"
+                echo -e "  ${GREEN}sudo service jenkins start${NC}"
+                echo ""
+            fi
+
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                echo -e "${BLUE}使用 brew services 启动（macOS）：${NC}"
+                echo -e "  ${GREEN}brew services start jenkins-lts${NC}"
+                echo ""
+            fi
+
+            if [ -f "/etc/init.d/jenkins" ]; then
+                echo -e "${BLUE}使用 init.d 脚本启动：${NC}"
+                echo -e "  ${GREEN}sudo /etc/init.d/jenkins start${NC}"
+                echo ""
+            fi
+
+            echo -e "${BLUE}手动启动（如果使用 war 包）：${NC}"
+            echo -e "  ${GREEN}java -jar jenkins.war${NC}"
+            echo ""
+        fi
+
+        echo -e "${BLUE}启动后，Jenkins 默认访问地址：${NC}"
+        echo -e "  ${GREEN}http://localhost:8080${NC}"
+        echo ""
+        # 如果端口或URL未检测到，给出额外提示
+        if [ -z "$JENKINS_PORT" ] || [ -z "$JENKINS_URL" ]; then
+            echo -e "${YELLOW}注意：Jenkins 端口或访问地址未检测到！${NC}"
+            echo -e "  - 请确认 Jenkins 服务正在运行并监听端口"
+            echo -e "  - 请检查防火墙是否阻止了端口访问"
+            echo -e "  - 请确认 Jenkins 配置的端口是否正确"
+            echo ""
+        fi
+
+        echo -e "${YELLOW}提示：${NC}"
+        echo -e "  - 如果 Jenkins 已安装但未检测到，请确保服务正在运行"
+        echo -e "  - 如果 Jenkins 运行在非默认端口，请检查防火墙设置"
+        echo -e "  - 如需跳过 Jenkins 检查，可设置环境变量：${GREEN}SKIP_JENKINS_CHECK=true${NC}"
+        echo ""
+        echo -e "${RED}构建已终止，请先启动 Jenkins 服务后再试！${NC}"
+        echo -e "${RED}========================================${NC}"
+        exit 1
+    fi
+
+    # 如果设置了必须检查的环境变量，则验证服务是否运行
+    if [ "${REQUIRE_JENKINS:-false}" = "true" ]; then
+        if [ "$JENKINS_INSTALLED" = false ]; then
+            echo -e "${RED}错误: Jenkins 未安装，且 REQUIRE_JENKINS=true${NC}"
+            echo -e "${YELLOW}提示: 请先安装 Jenkins 或设置 REQUIRE_JENKINS=false${NC}"
             exit 1
-        else
-            echo -e "${BLUE}提示: 未检测到 Jenkins 服务，但将继续执行（设置 REQUIRE_JENKINS=true 可强制要求）${NC}"
+        fi
+
+        if [ "$JENKINS_RUNNING" = false ]; then
+            echo -e "${RED}错误: Jenkins 未运行，且 REQUIRE_JENKINS=true${NC}"
+            echo -e "${YELLOW}提示: 请启动 Jenkins 服务或设置 REQUIRE_JENKINS=false${NC}"
+            exit 1
         fi
     fi
 }
@@ -311,6 +487,7 @@ deploy_to_target() {
     fi
 
     echo -e "${GREEN}部署完成！${NC}"
+    echo -e "${BLUE}访问地址: ${APP_URL}${NC}"
 }
 
 # 重启 Nginx（可选）
@@ -407,6 +584,7 @@ rollback_deployment() {
         sudo chmod -R 755 "$DEPLOY_DIR" 2>/dev/null || chmod -R 755 "$DEPLOY_DIR" || true
 
         echo -e "${GREEN}回滚完成！${NC}"
+        echo -e "${BLUE}访问地址: ${APP_URL}${NC}"
 
         # 重启 Nginx
         restart_nginx
@@ -435,6 +613,7 @@ case $ACTION in
         echo -e "${GREEN}========================================${NC}"
         echo -e "${GREEN}部署完成！${NC}"
         echo -e "${GREEN}部署目录: ${DEPLOY_DIR}${NC}"
+        echo -e "${GREEN}访问地址: ${APP_URL}${NC}"
         echo -e "${GREEN}========================================${NC}"
         ;;
     backup)
@@ -457,6 +636,7 @@ case $ACTION in
         echo -e "${GREEN}========================================${NC}"
         echo -e "${GREEN}构建和部署完成！${NC}"
         echo -e "${GREEN}部署目录: ${DEPLOY_DIR}${NC}"
+        echo -e "${GREEN}访问地址: ${APP_URL}${NC}"
         echo -e "${GREEN}========================================${NC}"
         ;;
 esac

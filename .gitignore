@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+tsconfig.tsbuildinfo
 
 # Docker 备份目录
 docker-backup/
