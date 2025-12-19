@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useLocation } from "react-router-dom";
 
-import { useTabs } from "@/app/TabsContext";
+import { useTabs } from "@/app/useApp";
 
 import type { IUseTableRequestOptions, IUseTableRequestReturn } from "./type";
 

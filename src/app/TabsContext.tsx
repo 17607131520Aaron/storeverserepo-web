@@ -1,37 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { menuItems } from "./constants";
-
-import type { MenuProps } from "antd";
-
-export interface ITabItem {
-  key: string;
-  label: string;
-  path: string;
-  closable?: boolean;
-}
-
-interface ITabsContextType {
-  tabs: ITabItem[];
-  activeKey: string;
-  refreshKey: string;
-  refreshingKey: string | null;
-  isTabSwitching: boolean;
-  addTab: (path: string) => void;
-  removeTab: (key: string) => void;
-  setActiveTab: (key: string) => void;
-  closeOtherTabs: (key: string) => void;
-  closeAllTabs: () => void;
-  refreshTab: (key: string) => void;
-  setRefreshingKey: (key: string | null) => void;
-  setIsTabSwitching: (value: boolean) => void;
-}
-
-const TabsContext = createContext<ITabsContextType | undefined>(undefined);
-
-type MenuItemType = NonNullable<MenuProps["items"]>[number];
+import { TabsContext } from "./TabsContextValue";
+import type { ITabItem, MenuItemType } from "./types";
 
 // 从菜单配置中获取页面标题
 const getPageTitle = (path: string): string => {
@@ -223,12 +196,4 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </TabsContext.Provider>
   );
-};
-
-export const useTabs = (): ITabsContextType => {
-  const context = useContext(TabsContext);
-  if (!context) {
-    throw new Error("useTabs must be used within TabsProvider");
-  }
-  return context;
 };

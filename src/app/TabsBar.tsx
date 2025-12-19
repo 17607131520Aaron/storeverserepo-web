@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 
-import { useTabs } from "./TabsContext";
+import { useTabs } from "./useApp";
 import "./TabsBar.scss";
 
 const TabsBar: React.FC = () => {
