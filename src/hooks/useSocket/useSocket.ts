@@ -4,12 +4,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { io } from "socket.io-client";
+import {
+  io,
+  type SocketOptions as IOSocketOptions,
+  type ManagerOptions,
+  type Socket,
+} from "socket.io-client";
 
-import { socketCache } from "./utils";
-
-import type { SocketOptions as IOSocketOptions, ManagerOptions, Socket } from "socket.io-client";
 import type { ConnectionState, IEmitResult, IUseSocketOptions, IUseSocketReturn } from "./type";
+import { socketCache } from "./utils";
 
 // eslint-disable-next-line max-lines-per-function
 export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {

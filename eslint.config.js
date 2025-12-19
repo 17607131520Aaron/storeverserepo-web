@@ -261,6 +261,12 @@ export default [
               position: "after",
             },
             {
+              // 相对路径的类型导入应该在外部依赖的类型导入之前
+              pattern: "./**",
+              group: "type",
+              position: "before",
+            },
+            {
               // 样式始终放在最后
               pattern: "**/*.{css,scss,less}",
               group: "index",
@@ -269,10 +275,13 @@ export default [
           ],
           pathGroupsExcludedImportTypes: ["react", "react-dom", "react-router-dom"],
           "newlines-between": "always",
+          // 字母排序，但 pathGroups 的优先级更高
           alphabetize: {
             order: "asc",
             caseInsensitive: true,
           },
+          // 确保 pathGroups 的优先级高于 alphabetize
+          warnOnUnassignedImports: false,
         },
       ],
 

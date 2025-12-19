@@ -1,7 +1,3 @@
-import { useSocket } from "./useSocket";
-import { useSSE } from "./useSSE";
-import { useWebSocket } from "./useWebSocket";
-
 import type {
   IUseSocketOptions,
   IUseSocketReturn,
@@ -10,6 +6,9 @@ import type {
   IUseWebSocketOptions,
   IUseWebSocketReturn,
 } from "./type";
+import { useSocket } from "./useSocket";
+import { useSSE } from "./useSSE";
+import { useWebSocket } from "./useWebSocket";
 
 export { useSocket, useSSE, useWebSocket };
 export type {

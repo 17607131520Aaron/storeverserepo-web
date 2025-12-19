@@ -1,5 +1,6 @@
-import type { Socket } from "socket.io-client";
 import type { ISetupHandlersParams } from "./type";
+
+import type { Socket } from "socket.io-client";
 
 /** Socket 实例缓存，实现连接复用 */
 export const socketCache = new Map<string, { refCount: number; socket: Socket }>();
