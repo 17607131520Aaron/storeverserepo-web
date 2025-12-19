@@ -77,21 +77,21 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             BUILD_CMD="pnpm build:dev"
             DEPLOY_DIR="${DEPLOY_DIR:-./deploy/dev}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
-            APP_URL="${APP_URL:-http://localhost:8080}"
+            APP_URL="${APP_URL:-http://localhost:3000}"
             ;;
         test)
             BUILD_MODE="test"
             BUILD_CMD="pnpm build:test"
             DEPLOY_DIR="${DEPLOY_DIR:-./deploy/test}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
-            APP_URL="${APP_URL:-http://localhost:8081}"
+            APP_URL="${APP_URL:-http://localhost:3001}"
             ;;
         prod)
             BUILD_MODE="production"
             BUILD_CMD="pnpm build:prod"
             DEPLOY_DIR="${DEPLOY_DIR:-./deploy/prod}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
-            APP_URL="${APP_URL:-http://localhost}"
+            APP_URL="${APP_URL:-http://localhost:3002}"
             ;;
     esac
 else
@@ -102,21 +102,21 @@ else
             BUILD_CMD="pnpm build:dev"
             DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-dev}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
-            APP_URL="${APP_URL:-http://localhost:8080}"
+            APP_URL="${APP_URL:-http://localhost:3000}"
             ;;
         test)
             BUILD_MODE="test"
             BUILD_CMD="pnpm build:test"
             DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-test}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
-            APP_URL="${APP_URL:-http://localhost:8081}"
+            APP_URL="${APP_URL:-http://localhost:3001}"
             ;;
         prod)
             BUILD_MODE="production"
             BUILD_CMD="pnpm build:prod"
             DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html}"
             BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
-            APP_URL="${APP_URL:-http://localhost}"
+            APP_URL="${APP_URL:-http://localhost:3002}"
             ;;
     esac
 fi
@@ -546,10 +546,21 @@ deploy_to_target() {
         sudo mkdir -p "$DEPLOY_DIR" || mkdir -p "$DEPLOY_DIR"
     fi
 
+    # 检查生产环境是否需要创建 storeverserepo-web 子目录（用于 GitHub Pages 部署）
+    ACTUAL_DEPLOY_DIR="$DEPLOY_DIR"
+    if [ "$BUILD_MODE" = "production" ] && [[ "$OSTYPE" == "darwin"* ]] && [[ "$DEPLOY_DIR" == ./* ]]; then
+        # 检查 HTML 文件是否使用了 /storeverserepo-web/ 路径
+        if grep -q "/storeverserepo-web/" dist/index.html 2>/dev/null; then
+            ACTUAL_DEPLOY_DIR="${DEPLOY_DIR}/storeverserepo-web"
+            echo -e "${YELLOW}检测到生产环境使用 /storeverserepo-web/ 路径，创建子目录...${NC}"
+            mkdir -p "$ACTUAL_DEPLOY_DIR"
+        fi
+    fi
+
     # 复制构建产物到部署目录
     echo -e "${YELLOW}复制构建产物到部署目录...${NC}"
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
-        cp -r dist/* "$DEPLOY_DIR/" || {
+        cp -r dist/* "$ACTUAL_DEPLOY_DIR/" || {
             echo -e "${RED}部署失败，正在恢复备份...${NC}"
             if [ -d "$TEMP_BACKUP" ]; then
                 mv "$TEMP_BACKUP" "$DEPLOY_DIR"
@@ -557,7 +568,7 @@ deploy_to_target() {
             exit 1
         }
     else
-        sudo cp -r dist/* "$DEPLOY_DIR/" 2>/dev/null || cp -r dist/* "$DEPLOY_DIR/" || {
+        sudo cp -r dist/* "$ACTUAL_DEPLOY_DIR/" 2>/dev/null || cp -r dist/* "$ACTUAL_DEPLOY_DIR/" || {
             echo -e "${RED}部署失败，正在恢复备份...${NC}"
             if [ -d "$TEMP_BACKUP" ]; then
                 sudo mv "$TEMP_BACKUP" "$DEPLOY_DIR" 2>/dev/null || mv "$TEMP_BACKUP" "$DEPLOY_DIR"
@@ -569,10 +580,10 @@ deploy_to_target() {
     # 设置正确的文件权限
     echo -e "${YELLOW}设置文件权限...${NC}"
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
-        chmod -R 755 "$DEPLOY_DIR" || true
+        chmod -R 755 "$ACTUAL_DEPLOY_DIR" || true
     else
-        sudo chown -R nginx:nginx "$DEPLOY_DIR" 2>/dev/null || sudo chown -R www-data:www-data "$DEPLOY_DIR" 2>/dev/null || true
-        sudo chmod -R 755 "$DEPLOY_DIR" 2>/dev/null || chmod -R 755 "$DEPLOY_DIR" || true
+        sudo chown -R nginx:nginx "$ACTUAL_DEPLOY_DIR" 2>/dev/null || sudo chown -R www-data:www-data "$ACTUAL_DEPLOY_DIR" 2>/dev/null || true
+        sudo chmod -R 755 "$ACTUAL_DEPLOY_DIR" 2>/dev/null || chmod -R 755 "$ACTUAL_DEPLOY_DIR" || true
     fi
 
     # 清理临时备份（如果部署成功）
@@ -585,27 +596,33 @@ deploy_to_target() {
     echo -e "${BLUE}访问地址: ${APP_URL}${NC}"
 }
 
-# 启动简单的 HTTP 服务器（用于 macOS 本地测试）
-start_local_server() {
+# 提供 Nginx 配置建议（用于 macOS 本地部署）
+show_nginx_config_hint() {
     if [[ "$OSTYPE" == "darwin"* ]] && [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
-        # 检查是否已经有服务器在运行
         local PORT=$(echo "$APP_URL" | sed -E 's|.*:([0-9]+).*|\1|')
         if [ -z "$PORT" ]; then
             PORT=8080
         fi
 
-        if lsof -i :${PORT} -P -n 2>/dev/null | grep -q LISTEN; then
-            echo -e "${BLUE}端口 ${PORT} 已被占用，跳过启动本地服务器${NC}"
-            return 0
-        fi
+        local ABS_DEPLOY_DIR=$(cd "$DEPLOY_DIR" && pwd)
 
-        echo -e "${YELLOW}提示: 在 macOS 上，可以使用以下命令启动本地服务器访问部署文件：${NC}"
-        echo -e "${GREEN}  cd ${DEPLOY_DIR} && python3 -m http.server ${PORT}${NC}"
+        echo -e "${YELLOW}提示: 在 macOS 上，需要配置 Nginx 来服务部署文件${NC}"
+        echo -e "${BLUE}部署目录: ${ABS_DEPLOY_DIR}${NC}"
+        echo -e "${BLUE}访问端口: ${PORT}${NC}"
         echo ""
-        echo -e "${YELLOW}或者使用 Node.js:${NC}"
-        if command -v npx &> /dev/null; then
-            echo -e "${GREEN}  cd ${DEPLOY_DIR} && npx serve -p ${PORT}${NC}"
-        fi
+        echo -e "${YELLOW}Nginx 配置示例（添加到 /opt/homebrew/etc/nginx/servers/ 或 /usr/local/etc/nginx/servers/）：${NC}"
+        echo -e "${GREEN}server {${NC}"
+        echo -e "${GREEN}    listen ${PORT};${NC}"
+        echo -e "${GREEN}    server_name localhost;${NC}"
+        echo -e "${GREEN}    root ${ABS_DEPLOY_DIR};${NC}"
+        echo -e "${GREEN}    index index.html;${NC}"
+        echo -e "${GREEN}    location / {${NC}"
+        echo -e "${GREEN}        try_files \$uri \$uri/ /index.html;${NC}"
+        echo -e "${GREEN}    }${NC}"
+        echo -e "${GREEN}}${NC}"
+        echo ""
+        echo -e "${YELLOW}配置完成后，运行:${NC}"
+        echo -e "${GREEN}  sudo nginx -t && sudo nginx -s reload${NC}"
         echo ""
     fi
 }
@@ -620,15 +637,15 @@ restart_nginx() {
             if sudo nginx -t 2>/dev/null || nginx -t 2>/dev/null; then
                 # 重新加载 nginx（不中断服务）
                 sudo nginx -s reload 2>/dev/null || nginx -s reload 2>/dev/null || {
-                    echo -e "${YELLOW}警告: Nginx 重新加载失败，可能需要手动重启${NC}"
-                    # 在 macOS 上，如果 nginx 不可用，提供启动本地服务器的提示
-                    start_local_server
+                    echo -e "${YELLOW}警告: Nginx 重新加载失败，可能需要手动重启或配置${NC}"
+                    # 在 macOS 上，如果 nginx 重新加载失败，提供配置建议
+                    show_nginx_config_hint
                 }
                 echo -e "${GREEN}Nginx 已重新加载${NC}"
             else
                 echo -e "${RED}错误: Nginx 配置检查失败${NC}"
-                # 在 macOS 上，如果 nginx 配置失败，提供启动本地服务器的提示
-                start_local_server
+                # 在 macOS 上，如果 nginx 配置失败，提供配置建议
+                show_nginx_config_hint
                 exit 1
             fi
         elif command -v systemctl &> /dev/null; then
@@ -638,14 +655,23 @@ restart_nginx() {
             }
             echo -e "${GREEN}Nginx 已重新加载${NC}"
         else
-            echo -e "${YELLOW}警告: 未找到 Nginx 命令，请手动重启 Nginx${NC}"
-            # 在 macOS 上，如果 nginx 不可用，提供启动本地服务器的提示
-            start_local_server
+            echo -e "${YELLOW}警告: 未找到 Nginx 命令${NC}"
+            # 在 macOS 上，如果 nginx 不可用，提供安装和配置建议
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                echo -e "${YELLOW}请先安装 Nginx:${NC}"
+                echo -e "${GREEN}  brew install nginx${NC}"
+                echo ""
+                show_nginx_config_hint
+            else
+                echo -e "${YELLOW}请安装并配置 Nginx 来服务部署文件${NC}"
+            fi
         fi
     else
         echo -e "${BLUE}跳过 Nginx 重启（RESTART_NGINX=false）${NC}"
-        # 即使跳过 nginx 重启，在 macOS 上也提供启动本地服务器的提示
-        start_local_server
+        # 即使跳过 nginx 重启，在 macOS 上也提供配置建议
+        if [[ "$OSTYPE" == "darwin"* ]] && [[ "$DEPLOY_DIR" == ./* ]]; then
+            show_nginx_config_hint
+        fi
     fi
 }
 
