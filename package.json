@@ -14,7 +14,8 @@
     "stylelint:fix": "stylelint \"**/*.{css,scss,less}\" --fix",
     "check": "pnpm lint && pnpm format:check && pnpm stylelint",
     "fix": "pnpm lint:fix && pnpm format && pnpm stylelint:fix",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",

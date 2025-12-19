@@ -21,6 +21,7 @@ export default [
       "config/**",
       ".stylelintrc",
       ".prettierrc",
+      ".lintstagedrc.js",
       "*.config.js",
       "*.config.ts",
     ],
