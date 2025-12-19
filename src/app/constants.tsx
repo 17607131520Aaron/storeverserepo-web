@@ -15,149 +15,149 @@ import {
   UnorderedListOutlined,
   UsergroupAddOutlined,
   UserOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 
-import type { MenuProps } from 'antd';
+import type { MenuProps } from "antd";
 // 菜单项配置 - 支持一级和二级菜单
-export const menuItems: MenuProps['items'] = [
+export const menuItems: MenuProps["items"] = [
   {
-    key: '/',
+    key: "/",
     icon: <HomeOutlined />,
-    label: '首页',
+    label: "首页",
   },
   {
-    key: 'dashboard',
+    key: "dashboard",
     icon: <AppstoreOutlined />,
-    label: '仪表盘',
+    label: "仪表盘",
     children: [
       {
-        key: '/dashboard/overview',
+        key: "/dashboard/overview",
         icon: <BarChartOutlined />,
-        label: '数据概览',
+        label: "数据概览",
       },
       {
-        key: '/dashboard/analysis',
+        key: "/dashboard/analysis",
         icon: <AppstoreOutlined />,
-        label: '统计分析',
+        label: "统计分析",
       },
     ],
   },
   {
-    key: 'documents',
+    key: "documents",
     icon: <FileTextOutlined />,
-    label: '文档管理',
+    label: "文档管理",
     children: [
       {
-        key: '/documents/list',
+        key: "/documents/list",
         icon: <FileTextOutlined />,
-        label: '文档列表',
+        label: "文档列表",
       },
       {
-        key: '/documents/category',
+        key: "/documents/category",
         icon: <FolderOutlined />,
-        label: '文档分类',
+        label: "文档分类",
       },
       {
-        key: '/documents/trash',
+        key: "/documents/trash",
         icon: <DeleteOutlined />,
-        label: '回收站',
+        label: "回收站",
       },
     ],
   },
   {
-    key: 'team',
+    key: "team",
     icon: <TeamOutlined />,
-    label: '团队管理',
+    label: "团队管理",
     children: [
       {
-        key: '/team/members',
+        key: "/team/members",
         icon: <UsergroupAddOutlined />,
-        label: '成员管理',
+        label: "成员管理",
       },
       {
-        key: '/team/roles',
+        key: "/team/roles",
         icon: <UserOutlined />,
-        label: '角色权限',
+        label: "角色权限",
       },
       {
-        key: '/team/departments',
+        key: "/team/departments",
         icon: <TeamOutlined />,
-        label: '部门管理',
+        label: "部门管理",
       },
     ],
   },
   {
-    key: 'barcode',
+    key: "barcode",
     icon: <BarChartOutlined />,
-    label: '条码管理',
+    label: "条码管理",
     children: [
       {
-        key: '/barcode/manage',
+        key: "/barcode/manage",
         icon: <BarChartOutlined />,
-        label: '条码生成',
+        label: "条码生成",
       },
     ],
   },
   {
-    key: 'settings',
+    key: "settings",
     icon: <SettingOutlined />,
-    label: '系统设置',
+    label: "系统设置",
     children: [
       {
-        key: '/settings/basic',
+        key: "/settings/basic",
         icon: <SettingOutlined />,
-        label: '基础设置',
+        label: "基础设置",
       },
       {
-        key: '/settings/security',
+        key: "/settings/security",
         icon: <SafetyOutlined />,
-        label: '安全设置',
+        label: "安全设置",
       },
       {
-        key: '/settings/logs',
+        key: "/settings/logs",
         icon: <FileSearchOutlined />,
-        label: '日志管理',
+        label: "日志管理",
       },
     ],
   },
   {
-    key: 'rndebug',
+    key: "rndebug",
     icon: <BugOutlined />,
-    label: '服务通APP调试工具',
+    label: "react native调试工具",
     children: [
       {
-        key: '/smartserviceappDebug/debuglogs',
+        key: "/smartserviceappDebug/debuglogs",
         icon: <UnorderedListOutlined />,
-        label: '日志',
+        label: "日志",
       },
       {
-        key: '/smartserviceappDebug/network',
+        key: "/smartserviceappDebug/network",
         icon: <ApiOutlined />,
-        label: '网络',
+        label: "网络",
       },
     ],
   },
 ];
 
 // 用户下拉菜单
-export const userMenuItems: MenuProps['items'] = [
+export const userMenuItems: MenuProps["items"] = [
   {
-    key: 'profile',
+    key: "profile",
     icon: <UserOutlined />,
-    label: '个人中心',
+    label: "个人中心",
   },
   {
-    key: 'settings',
+    key: "settings",
     icon: <SettingOutlined />,
-    label: '账户设置',
+    label: "账户设置",
   },
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    key: 'logout',
+    key: "logout",
     icon: <LogoutOutlined />,
-    label: '退出登录',
+    label: "退出登录",
     danger: true,
   },
 ];

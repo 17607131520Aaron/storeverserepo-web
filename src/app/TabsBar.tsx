@@ -6,7 +6,7 @@ import { useTabs } from "./TabsContext";
 import "./TabsBar.scss";
 
 const TabsBar: React.FC = () => {
-  const { tabs, activeKey, setActiveTab, removeTab, closeOtherTabs, closeAllTabs, refreshTab } = useTabs();
+  const { tabs, activeKey, setActiveTab, removeTab, closeOtherTabs, refreshTab } = useTabs();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLDivElement>(null);
   const [refreshingTabs, setRefreshingTabs] = useState<Set<string>>(new Set());
@@ -80,21 +80,19 @@ const TabsBar: React.FC = () => {
               onClick={(e) => handleTabClick(tab, e)}
               onContextMenu={(e) => handleContextMenu(tab, e)}
             >
+              <span
+                className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
+                title="刷新页面"
+                onClick={(e) => handleRefresh(tab, e)}
+              >
+                <ReloadOutlined />
+              </span>
               <span className="asp-tabs-bar-item-label">{tab.label}</span>
-              <div className="asp-tabs-bar-item-actions">
-                <span
-                  className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
-                  title="刷新页面"
-                  onClick={(e) => handleRefresh(tab, e)}
-                >
-                  <ReloadOutlined />
+              {tab.closable && (
+                <span className="asp-tabs-bar-item-close" title="关闭标签" onClick={(e) => handleClose(tab, e)}>
+                  <CloseOutlined />
                 </span>
-                {tab.closable && (
-                  <span className="asp-tabs-bar-item-close" title="关闭标签" onClick={(e) => handleClose(tab, e)}>
-                    <CloseOutlined />
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           );
         })}

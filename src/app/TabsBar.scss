@@ -32,56 +32,43 @@
   &-item {
     position: relative;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     height: 36px;
-    padding: 0 8px 0 12px;
+    padding: 0 30px;
     font-size: 13px;
-    color: #595959;
-    background: #f5f5f5;
+    color: #237ffa;
+    background: #ecf2fe;
     border-radius: 6px;
     transition: all 0.2s;
     flex-shrink: 0;
-    gap: 4px;
+    gap: 6px;
     margin-right: 4px;
     white-space: nowrap;
     cursor: pointer;
 
     &:hover {
-      color: #237ffa;
-      background: #e8e8e8;
+      background: #d6e6fe;
 
-      .asp-tabs-bar-item-actions {
+      .asp-tabs-bar-item-close {
         opacity: 1;
       }
     }
 
     &.active {
       font-weight: 500;
-      color: #fff;
-      background: linear-gradient(135deg, #237ffa 0%, #1e6dd8 100%);
-      box-shadow: 0 2px 8px rgb(35 127 250 / 0.3);
+      color: #237ffa; // 文本颜色改为蓝色
+      background: #ecf2fe; // 背景色
 
-      .asp-tabs-bar-item-actions {
-        opacity: 1;
+      .asp-tabs-bar-item-refresh {
+        color: #237ffa; // 刷新图标蓝色
 
-        .asp-tabs-bar-item-refresh,
-        .asp-tabs-bar-item-close {
-          color: rgb(255 255 255 / 0.85);
-
-          &:hover {
-            color: #fff;
-            background: rgb(255 255 255 / 0.2);
-          }
+        &:hover {
+          background: rgb(35 127 250 / 0.1);
         }
 
-        .asp-tabs-bar-item-refresh.refreshing {
-          color: #fff;
-        }
-
-        .asp-tabs-bar-item-close:hover {
-          color: #ffccc7;
-          background: rgb(255 77 79 / 0.3);
+        &.refreshing {
+          color: #237ffa;
+          animation: rotate 0.6s linear infinite;
         }
       }
     }
@@ -91,14 +78,7 @@
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    &-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.2s;
+      padding-right: 20px;
     }
 
     &-refresh {
@@ -108,11 +88,12 @@
       width: 18px;
       height: 18px;
       font-size: 12px;
-      color: #8c8c8c;
+      color: #237ffa;
       border-radius: 50%;
       transition: all 0.2s;
       flex-shrink: 0;
       cursor: pointer;
+      opacity: 1; // 刷新图标始终显示
 
       &:hover {
         color: #237ffa;
@@ -127,6 +108,9 @@
     }
 
     &-close {
+      position: absolute;
+      top: 50%;
+      right: 15px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -136,13 +120,14 @@
       color: #8c8c8c;
       border-radius: 50%;
       transition: all 0.2s;
-      flex-shrink: 0;
+      transform: translateY(-50%);
       cursor: pointer;
+      opacity: 0; // 默认隐藏，悬停时显示
 
       &:hover {
         color: #ff4d4f;
         background: rgb(255 77 79 / 0.1);
-        transform: scale(1.1);
+        transform: translateY(-50%) scale(1.1);
       }
     }
   }
@@ -193,7 +178,7 @@
 
     &-item {
       max-width: 140px;
-      padding: 0 6px 0 8px;
+      padding: 0 30px;
       font-size: 12px;
 
       &-label {
