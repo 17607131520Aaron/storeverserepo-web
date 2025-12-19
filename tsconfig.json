@@ -30,6 +30,6 @@
     "emitDeclarationOnly": false,
     "incremental": false
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
