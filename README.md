@@ -19,6 +19,7 @@ StoreVerse Web 是一个功能完善的企业级管理系统，提供了文档�
 - 📱 **响应式设计**: 适配多种屏幕尺寸
 - 🎯 **状态管理**: 基于 Zustand 的轻量级状态管理方案
 - 🐳 **Docker 支持**: 完整的 Docker 多环境部署方案
+- 🔧 **Jenkins 部署**: 提供 Jenkins 部署脚本，支持传统部署方式
 
 ---
 
@@ -203,7 +204,8 @@ storeverserepo-web/
 │   ├── utils/             # 工具方法文档
 │   └── types/             # 类型定义文档
 ├── scripts/                 # 脚本文件
-│   └── docker-deploy.sh   # Docker 部署脚本
+│   ├── docker-deploy.sh   # Docker 部署脚本
+│   └── jenkins-deploy.sh  # Jenkins 部署脚本（不使用 Docker）
 ├── public/                 # 静态资源
 ├── src/
 │   ├── app/               # 应用主组件
@@ -461,6 +463,85 @@ import { util } from "@/utils/util";
 #### 详细文档
 
 完整的 Docker 部署文档请参考：[Docker 部署指南](./DOCKER.md)
+
+### Jenkins 部署（不使用 Docker）
+
+项目提供了 Jenkins 部署脚本，适用于不使用 Docker 的传统部署方式：
+
+#### 快速部署
+
+```bash
+# 测试环境
+./scripts/jenkins-deploy.sh test
+
+# 开发环境
+./scripts/jenkins-deploy.sh dev
+
+# 生产环境
+./scripts/jenkins-deploy.sh prod
+```
+
+#### 可用操作
+
+```bash
+# 仅构建项目
+./scripts/jenkins-deploy.sh prod build
+
+# 仅部署（需要先构建）
+./scripts/jenkins-deploy.sh prod deploy
+
+# 备份当前部署版本
+./scripts/jenkins-deploy.sh prod backup
+
+# 回滚到上一个版本
+./scripts/jenkins-deploy.sh prod rollback
+```
+
+#### 特性
+
+- ✅ **多环境支持**: dev、test、prod 三个环境
+- ✅ **自动备份**: 部署前自动备份当前版本到 `./deploy-backup/` 目录
+- ✅ **Jenkins 检查**: 构建前自动检查 Jenkins 服务状态
+- ✅ **Nginx 集成**: 自动重新加载 Nginx 配置（可选）
+- ✅ **回滚支持**: 支持一键回滚到上一个版本
+- ✅ **权限管理**: 自动设置正确的文件权限
+
+#### 环境变量配置
+
+可通过环境变量自定义部署行为：
+
+```bash
+# 自定义部署目录
+DEPLOY_DIR=/custom/path ./scripts/jenkins-deploy.sh prod
+
+# 自定义备份目录
+BACKUP_DIR=/custom/backup ./scripts/jenkins-deploy.sh prod
+
+# 跳过 Nginx 重启
+RESTART_NGINX=false ./scripts/jenkins-deploy.sh prod
+
+# 强制要求 Jenkins 服务运行
+REQUIRE_JENKINS=true ./scripts/jenkins-deploy.sh prod
+
+# 跳过 Jenkins 检查
+SKIP_JENKINS_CHECK=true ./scripts/jenkins-deploy.sh prod
+```
+
+#### 默认部署目录
+
+- **dev**: `/usr/share/nginx/html-dev`
+- **test**: `/usr/share/nginx/html-test`
+- **prod**: `/usr/share/nginx/html`
+
+#### 在 Jenkins Pipeline 中使用
+
+```groovy
+stage('Deploy') {
+    steps {
+        sh './scripts/jenkins-deploy.sh prod'
+    }
+}
+```
 
 ### GitHub Pages
 
