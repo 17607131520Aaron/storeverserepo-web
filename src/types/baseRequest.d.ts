@@ -13,10 +13,10 @@ export interface IMenuItem {
 }
 
 // 请求配置接口
-export interface IRequestConfig<T> {
+export interface IRequestConfig<T = unknown> {
   url: string;
-  data: T;
-  handleRaw: boolean;
+  data?: T;
+  handleRaw?: boolean;
   timeout?: number;
   cancelToken?: AbortController;
   retry?: number;
