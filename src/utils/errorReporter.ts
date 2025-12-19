@@ -26,7 +26,7 @@ interface INormalizedPayload extends IClientIssuePayload {
 }
 
 let hasInitGlobalListener = false;
-let currentReportSender: ReportSender = async (normalized) => {
+let currentReportSender: ReportSender = (normalized) => {
   console.log(normalized, "normalized上报错误");
 
   // await fetch("/mock-api/client-error-report", {
