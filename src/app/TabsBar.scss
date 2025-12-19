@@ -18,22 +18,17 @@
     overflow: auto hidden;
     scroll-behavior: smooth;
 
+    // 隐藏滚动条但保持滚动功能
+    // Webkit 浏览器（Chrome, Safari, Edge）
     &::-webkit-scrollbar {
-      height: 4px;
+      display: none;
+      width: 0;
+      height: 0;
     }
 
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgb(0 0 0 / 0.1);
-      border-radius: 2px;
-
-      &:hover {
-        background: rgb(0 0 0 / 0.2);
-      }
-    }
+    // Firefox 浏览器
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   &-item {
@@ -72,24 +67,24 @@
       .asp-tabs-bar-item-actions {
         opacity: 1;
 
-      .asp-tabs-bar-item-refresh,
-      .asp-tabs-bar-item-close {
-        color: rgb(255 255 255 / 0.85);
+        .asp-tabs-bar-item-refresh,
+        .asp-tabs-bar-item-close {
+          color: rgb(255 255 255 / 0.85);
 
-        &:hover {
-          color: #fff;
-          background: rgb(255 255 255 / 0.2);
+          &:hover {
+            color: #fff;
+            background: rgb(255 255 255 / 0.2);
+          }
         }
-      }
 
-      .asp-tabs-bar-item-refresh.refreshing {
-        color: #fff;
-      }
+        .asp-tabs-bar-item-refresh.refreshing {
+          color: #fff;
+        }
 
-      .asp-tabs-bar-item-close:hover {
-        color: #ffccc7;
-        background: rgb(255 77 79 / 0.3);
-      }
+        .asp-tabs-bar-item-close:hover {
+          color: #ffccc7;
+          background: rgb(255 77 79 / 0.3);
+        }
       }
     }
 
