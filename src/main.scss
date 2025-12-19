@@ -956,6 +956,23 @@ table {
 }
 
 /* ============================================
+   全局主题修复 - 仅对 Ant Design 组件生效
+   不强制覆盖，避免干扰现有样式
+   ============================================ */
+[data-theme="dark"] {
+  /* Card 组件自动适配（仅在未设置自定义背景时） */
+  .ant-card:not([style*="background"]) {
+    background: var(--color-bg);
+    border-color: var(--color-border);
+  }
+
+  /* Typography 组件自动适配（仅在未设置自定义颜色时） */
+  .ant-typography:not([style*="color"]) {
+    color: var(--color-text-primary);
+  }
+}
+
+/* ============================================
    通用动画
    ============================================ */
 @keyframes fadeIn {
