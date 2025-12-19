@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
+    // 部署到 GitHub Pages 的子路径： https://17607131520Aaron.github.io/storeverserepo-web/
+    base: "/storeverserepo-web/",
     plugins: [react()],
     server: {
       port: Number(env.VITE_PORT) || 8000,
