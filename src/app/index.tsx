@@ -13,6 +13,7 @@ import { Avatar, Dropdown, Layout, Menu, Space, Spin, Typography } from "antd";
 import { menuItems, userMenuItems } from "./constants";
 import TabsBar from "./TabsBar";
 import { TabsProvider, useTabs } from "./TabsContext";
+import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
 
 import "./app.scss";
 
@@ -240,7 +241,12 @@ const AppContent: React.FC = () => {
               tip={isRefreshing ? "页面刷新中..." : "页面加载中..."}
             >
               <div style={{ minHeight: "100%" }}>
-                <Outlet key={`${location.pathname}-${refreshKey}`} />
+                <PerformanceMonitor
+                  id={`Page-${location.pathname}`}
+                  enableConsoleLog={true}
+                >
+                  <Outlet key={`${location.pathname}-${refreshKey}`} />
+                </PerformanceMonitor>
               </div>
             </Spin>
           </div>

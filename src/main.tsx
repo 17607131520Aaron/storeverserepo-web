@@ -7,6 +7,7 @@ import ZhCN from "antd/locale/zh_CN";
 import { createRoot } from "react-dom/client";
 
 import LoadingFallback from "@/components/LoadingFallback";
+import PerformanceMonitorWrapper from "@/components/PerformanceMonitorWrapper";
 
 import "./main.scss";
 import routers from "./router";
@@ -16,8 +17,10 @@ const root = createRoot(container);
 
 root.render(
   <ConfigProvider locale={ZhCN}>
-    <Suspense fallback={<LoadingFallback />}>
-      <RouterProvider router={routers} />
-    </Suspense>
+    <PerformanceMonitorWrapper>
+      <Suspense fallback={<LoadingFallback />}>
+        <RouterProvider router={routers} />
+      </Suspense>
+    </PerformanceMonitorWrapper>
   </ConfigProvider>,
 );
