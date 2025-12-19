@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 const Network: React.FC = () => {
-  return <div>服务通aoo网络日志控制台</div>;
+  return <div>react native网络日志控制台</div>;
 };
 
 export default Network;

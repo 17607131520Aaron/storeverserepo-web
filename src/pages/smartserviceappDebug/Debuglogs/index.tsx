@@ -1,18 +1,14 @@
 import React from "react";
 
-import { ClearOutlined, DisconnectOutlined, ReloadOutlined } from "@ant-design/icons";
 import {
-  Badge,
-  Button,
-  Card,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-  Spin,
-  Tooltip,
-  Typography,
-} from "antd";
+  ClearOutlined,
+  DisconnectOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  ReloadOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
+import { Badge, Button, Card, Input, InputNumber, Select, Space, Spin, Tooltip, Typography } from "antd";
 
 import { DEFAULT_PORT, getLogLevelColor, levelOptions } from "./constants";
 import { useDebuglogs, type ConnectionMode } from "./useDebuglogs";
@@ -35,6 +31,7 @@ const RNDebugLogs: React.FC = () => {
     setConnectionMode,
     isConnecting,
     isConnected,
+    isPaused,
     levelFilter,
     setLevelFilter,
     searchText,
@@ -42,6 +39,8 @@ const RNDebugLogs: React.FC = () => {
     filteredLogs,
     handleConnectClick,
     handleClearLogs,
+    handlePause,
+    handleClose,
   } = useDebuglogs();
 
   return (
@@ -56,10 +55,7 @@ const RNDebugLogs: React.FC = () => {
                 <Text type="secondary">连接中...</Text>
               </Space>
             ) : (
-              <Badge
-                status={isConnected ? "success" : "error"}
-                text={isConnected ? "已连接" : "未连接"}
-              />
+              <Badge status={isConnected ? "success" : "error"} text={isConnected ? "已连接" : "未连接"} />
             )}
           </Space>
 
@@ -91,13 +87,24 @@ const RNDebugLogs: React.FC = () => {
 
           <Space>
             <Tooltip title="连接">
-              <Button
-                icon={<ReloadOutlined />}
-                loading={isConnecting}
-                type="primary"
-                onClick={handleConnectClick}
-              >
+              <Button icon={<ReloadOutlined />} loading={isConnecting} type="primary" onClick={handleConnectClick}>
                 {isConnected ? "重连" : "连接"}
+              </Button>
+            </Tooltip>
+
+            <Tooltip title={isPaused ? "恢复" : "暂停"}>
+              <Button
+                disabled={!isConnected}
+                icon={isPaused ? <PlayCircleOutlined /> : <PauseCircleOutlined />}
+                onClick={handlePause}
+              >
+                {isPaused ? "恢复" : "暂停"}
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="关闭连接">
+              <Button danger disabled={!isConnected && !isConnecting} icon={<StopOutlined />} onClick={handleClose}>
+                关闭
               </Button>
             </Tooltip>
 
@@ -133,9 +140,7 @@ const RNDebugLogs: React.FC = () => {
             <div className="rn-debug-logs-empty">
               <DisconnectOutlined style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }} />
               <Text type="secondary">
-                {isConnected
-                  ? "已连接，等待日志输出..."
-                  : "未连接，请点击连接按钮连接到 Metro bundler"}
+                {isConnected ? "已连接，等待日志输出..." : "未连接，请点击连接按钮连接到 Metro bundler"}
               </Text>
               <Text style={{ fontSize: "12px", marginTop: 8 }} type="secondary">
                 默认端口: {DEFAULT_PORT}
@@ -148,10 +153,7 @@ const RNDebugLogs: React.FC = () => {
                 className="rn-debug-logs-item"
                 data-level={log.level === "unknown" ? undefined : log.level}
               >
-                <span
-                  className="rn-debug-logs-level"
-                  style={{ color: getLogLevelColor(log.level) }}
-                >
+                <span className="rn-debug-logs-level" style={{ color: getLogLevelColor(log.level) }}>
                   [{log.level.toUpperCase()}]
                 </span>
                 <span className="rn-debug-logs-message">
