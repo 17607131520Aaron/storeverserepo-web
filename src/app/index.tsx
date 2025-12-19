@@ -165,10 +165,16 @@ const AppContent: React.FC = () => {
     <Layout className="asp-comprehension-home" style={{ height: "100vh", overflow: "hidden" }}>
       <Sider
         collapsible
+        breakpoint="md"
         className="asp-comprehension-home-menu"
         collapsed={collapsed}
+        collapsedWidth={80}
         trigger={null}
         width={240}
+        onBreakpoint={(broken) => {
+          // 小屏幕时自动折叠侧边栏，提升可用空间；恢复到大屏时展开
+          setCollapsed(broken);
+        }}
       >
         <div className="asp-comprehension-home-menu-header">
           <div className="asp-comprehension-home-menu-logo">
