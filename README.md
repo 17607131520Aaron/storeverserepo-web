@@ -43,7 +43,7 @@
 - **Axios 1.13.2** - HTTP 客户端
 - **Day.js 1.11.19** - 轻量级日期处理库
 - **Lodash 4.17.21** - JavaScript 工具函数库
-- **Dexie 4.2.1** - IndexedDB 封装库
+- **Dexie 4.2.1** - IndexedDB 封装库（项目内使用自定义工具 `indexedDBStorage`）
 - **js-cookie 3.0.5** - Cookie 操作库
 
 ### 图表与可视化
@@ -108,7 +108,8 @@ storeverserepo-web/
 │   │   └── request/          # HTTP 请求封装
 │   └── types/                 # TypeScript 类型定义
 ├── docs/                      # 项目文档
-│   └── useSocket.md          # useSocket Hook 使用文档
+│   ├── useSocket.md          # useSocket Hook 使用文档
+│   └── indexedDBStorage.md   # IndexedDB 存储工具使用说明
 ├── public/                    # 静态资源
 ├── vite.config.ts            # Vite 构建配置
 ├── tsconfig.json             # TypeScript 配置
@@ -196,7 +197,20 @@ storeverserepo-web/
 
 详细使用文档请参考：[useSocket Hook 使用文档](./docs/useSocket.md)
 
-### 3. 路由懒加载
+### 3. 错误监控与上报
+
+- 全局错误捕获：`ErrorReportingProvider` 初始化 `window.error` / `unhandledrejection` 上报
+- 渲染崩溃兜底：`ErrorBoundary` 保护根节点并上报组件堆栈
+- 交互异常包装：`withClientErrorGuard("操作名", handler)` 自动上报业务/点击等逻辑异常
+- 上报出口可替换：通过 `setClientIssueReporter` 注入自定义请求函数（默认指向 `/mock-api/client-error-report`）
+
+### 4. 本地数据存储（IndexedDB）
+
+- 工具：`src/utils/indexedDBStorage.ts`，文档见 `docs/indexedDBStorage.md`
+- 支持在浏览器 IndexedDB 中存取项目数据（键值 + 任意 JSON），适合配置/缓存/最近记录
+- 方法：`saveProjectInfo` / `getProjectInfo` / `getAllProjectInfo` / `deleteProjectInfo` / `clearProjectInfo`
+
+### 5. 路由懒加载
 
 所有页面组件采用 React.lazy 实现按需加载，优化首屏加载速度：
 
@@ -204,7 +218,7 @@ storeverserepo-web/
 const DashboardOverview = lazy(() => import('@/pages/Dashboard/Overview'));
 ```
 
-### 4. 代码分割优化
+### 6. 代码分割优化
 
 通过 Vite 的 advancedChunks 配置实现智能代码分割：
 
