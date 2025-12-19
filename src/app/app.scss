@@ -20,6 +20,14 @@
     background: var(--color-bg, #fff);
     box-shadow: var(--shadow-md, 2px 0 12px rgb(0 0 0 / 0.04));
     overflow: hidden;
+
+    // 让侧边栏内容（含头部 / 搜索 / 菜单）采用纵向 flex 布局
+    .ant-layout-sider-children {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
   }
 
   .ant-layout-content {
@@ -219,6 +227,7 @@
       display: flex;
       flex-direction: column;
       flex: 1;
+      min-height: 0;
       overflow: hidden;
 
       &-count {
@@ -302,6 +311,7 @@
 
     &-content {
       flex: 1;
+      min-height: 0;
       margin-top: 0;
       padding: 8px;
       overflow: hidden auto;
