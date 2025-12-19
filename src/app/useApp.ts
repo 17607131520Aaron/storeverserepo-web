@@ -220,12 +220,29 @@ export const useApp = (): IUseAppReturn => {
         }
       });
       setOpenKeys(keysToOpen);
-    } else {
-      // 清空搜索时，恢复默认展开状态
-      const path = location.pathname || "/";
-      setOpenKeys(getKeysToOpen(path));
     }
-  }, [searchValue, location.pathname]);
+    // 移除 else 分支，不再在路由变化时重置 openKeys
+  }, [searchValue]);
+
+  // 监听路由变化，自动展开当前路径对应的菜单（但不收起已展开的菜单）
+  useEffect(() => {
+    if (!searchValue.trim()) {
+      // 只在非搜索状态下，自动展开当前路径对应的菜单
+      const path = location.pathname || "/";
+      const keysToOpenForCurrentPath = getKeysToOpen(path);
+
+      // 将当前路径对应的菜单 key 添加到已展开的列表中（如果不存在）
+      setOpenKeys((prevKeys) => {
+        const newKeys = [...prevKeys];
+        keysToOpenForCurrentPath.forEach((key) => {
+          if (!newKeys.includes(key)) {
+            newKeys.push(key);
+          }
+        });
+        return newKeys;
+      });
+    }
+  }, [location.pathname, searchValue]);
 
   // 菜单点击处理
   const handleMenuClick = ({ key }: { key: string }): void => {
