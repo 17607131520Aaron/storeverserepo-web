@@ -17,6 +17,8 @@ export interface IVirtualTableProps<RecordType> {
   dataSource: RecordType[];
   rowKey?: string | ((record: RecordType, index: number) => React.Key);
   className?: string;
+  loading?: boolean;
+  loadingText?: ReactNode;
   height?: number;
   rowHeight?: number;
   headerHeight?: number;
@@ -47,6 +49,8 @@ export function VirtualTableComponent<RecordType>({
   dataSource,
   rowKey,
   className,
+  loading = false,
+  loadingText,
   height = 400,
   rowHeight = 40,
   headerHeight = 40,
@@ -123,7 +127,7 @@ export function VirtualTableComponent<RecordType>({
 
   const tableClass = ["virtual-table", "ant-table", className].filter(Boolean).join(" ");
 
-  if (!dataSource.length) {
+  if (!dataSource.length && !loading) {
     return (
       <div className={tableClass}>
         <div className="ant-table-container">
@@ -144,6 +148,37 @@ export function VirtualTableComponent<RecordType>({
             </div>
           </div>
           <div className="virtual-table-empty">暂无数据</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dataSource.length && loading) {
+    return (
+      <div className={tableClass}>
+        <div className="ant-table-container">
+          <div className="virtual-table-header ant-table-header">
+            <div className="virtual-table-header-row ant-table-thead">
+              {columns.map((col, index) => (
+                <div
+                  key={col.key || String(col.dataIndex) || index}
+                  className="virtual-table-cell virtual-table-header-cell ant-table-cell"
+                  style={{
+                    flex: `${columnWidths[index]} 0 0`,
+                    minWidth: 0,
+                  }}
+                >
+                  {col.title}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="virtual-table-body ant-table-body" style={{ height }}>
+            <div className="virtual-table-loading">
+              <div className="virtual-table-loading-spinner" />
+              <div className="virtual-table-loading-text">{loadingText ?? "数据加载中..."}</div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -175,14 +210,24 @@ export function VirtualTableComponent<RecordType>({
         <div className="virtual-table-body ant-table-body">
           <AutoSizer disableHeight>
             {({ width }) => (
-              <List
-                height={height}
-                overscanRowCount={10}
-                rowCount={dataSource.length}
-                rowHeight={rowHeight}
-                rowRenderer={rowRenderer}
-                width={width * totalWidth}
-              />
+              <>
+                <List
+                  height={height}
+                  overscanRowCount={10}
+                  rowCount={dataSource.length}
+                  rowHeight={rowHeight}
+                  rowRenderer={rowRenderer}
+                  width={width * totalWidth}
+                />
+                {loading && (
+                  <div className="virtual-table-loading">
+                    <div className="virtual-table-loading-spinner" />
+                    <div className="virtual-table-loading-text">
+                      {loadingText ?? "数据加载中..."}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </AutoSizer>
         </div>

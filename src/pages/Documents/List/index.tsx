@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { Typography } from "antd";
 
@@ -50,6 +50,21 @@ const mockData: IDocumentRecord[] = Array.from({ length: 50000 }).map((_item, in
 }));
 
 const DocumentsList: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<IDocumentRecord[]>([]);
+
+  useEffect(() => {
+    // 模拟请求接口加载数据
+    const timer = setTimeout(() => {
+      setData(mockData);
+      setLoading(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+
   return (
     <div style={{ padding: "24px 0" }}>
       <Title level={2} style={{ marginBottom: 24, color: "#1f2937", fontWeight: 600 }}>
@@ -66,8 +81,10 @@ const DocumentsList: React.FC = () => {
       >
         <VirtualTableComponent<IDocumentRecord>
           columns={columns}
-          dataSource={mockData}
+          dataSource={data}
           height={480}
+          loading={loading}
+          loadingText="正在加载文档列表..."
           rowHeight={44}
           rowKey="id"
         />
