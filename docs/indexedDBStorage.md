@@ -4,11 +4,13 @@
 用途：在浏览器 IndexedDB 中存储/读取项目相关信息（键值对 + 任意 JSON）
 
 ### 数据库信息
+
 - 数据库：`storeverse-app`
 - 表（object store）：`project_info`，`keyPath="key"`
 - 记录结构：`{ key: string; value: unknown; updatedAt: number }`
 
 ### 可用方法
+
 - `saveProjectInfo(key: string, value: unknown): Promise<void>`
   - 保存或更新数据；自动附带更新时间戳。
 - `getProjectInfo<T = unknown>(key: string): Promise<T | null>`
@@ -21,6 +23,7 @@
   - 清空表内全部记录。
 
 ### 快速示例
+
 ```ts
 import {
   saveProjectInfo,
@@ -43,5 +46,6 @@ await deleteProjectInfo("user-profile");
 ```
 
 ### 注意事项
+
 - 仅在浏览器环境可用；若 IndexedDB 不可用（隐私模式等），内部会捕获错误并输出控制台警告，调用方无需额外处理。
 - 没有事务性多表/查询能力，更适合轻量缓存、配置或最近记录，复杂关系型需求仍需后端数据库。

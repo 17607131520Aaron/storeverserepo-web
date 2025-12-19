@@ -12,25 +12,37 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      // 先修复 ESLint 问题（包括导入顺序），再格式化
+      "source.fixAll.eslint": "explicit",
+      // 禁用 JavaScript 的 organizeImports，避免与 ESLint 的 import/order 冲突
+      "source.organizeImports": "never"
     }
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      // 先修复 ESLint 问题（包括导入顺序），再格式化
+      "source.fixAll.eslint": "explicit",
+      // 禁用 JavaScript 的 organizeImports，避免与 ESLint 的 import/order 冲突
+      "source.organizeImports": "never"
     }
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      // 先修复 ESLint 问题（包括导入顺序），再格式化
+      "source.fixAll.eslint": "explicit",
+      // 禁用 TypeScript 的 organizeImports，避免与 ESLint 的 import/order 冲突
+      "source.organizeImports": "never"
     }
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      // 先修复 ESLint 问题（包括导入顺序），再格式化
+      "source.fixAll.eslint": "explicit",
+      // 禁用 TypeScript 的 organizeImports，避免与 ESLint 的 import/order 冲突
+      "source.organizeImports": "never"
     }
   },
   "[json]": {
@@ -45,18 +57,21 @@
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
+      // 先修复 Stylelint 问题，再格式化
       "source.fixAll.stylelint": "explicit"
     }
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
+      // 先修复 Stylelint 问题，再格式化
       "source.fixAll.stylelint": "explicit"
     }
   },
   "[less]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
+      // 先修复 Stylelint 问题，再格式化
       "source.fixAll.stylelint": "explicit"
     }
   },
@@ -108,6 +123,8 @@
   "stylelint.validate": ["css", "scss", "less"],
   // 不忽略 stylelint-disable 注释
   "stylelint.ignoreDisables": false,
+  // 明确指定 Stylelint 配置文件路径（优先使用 stylelint.config.cjs）
+  "stylelint.config": "stylelint.config.cjs",
   // Ant Design Less 相关配置
   "less.lint.unknownAtRules": "ignore",
   // CSS 模块支持
@@ -131,12 +148,16 @@
   },
   // 文件移动时自动更新导入
   "typescript.updateImportsOnFileMove.enabled": "always",
+  // 禁用 TypeScript 的导入排序，使用 ESLint 的 import/order 规则
+  "typescript.preferences.organizeImports": false,
 
   // ========== JavaScript 配置 ==========
   "javascript.preferences.importModuleSpecifier": "shortest",
   "javascript.suggest.autoImports": true,
   "javascript.suggest.completeFunctionCalls": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
+  // 禁用 JavaScript 的导入排序，使用 ESLint 的 import/order 规则
+  "javascript.preferences.organizeImports": false,
 
   // ========== 路径别名配置 ==========
   "path-intellisense.mappings": {
