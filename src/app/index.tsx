@@ -121,7 +121,7 @@ const App: React.FC = () => {
               <AppstoreOutlined />
             </div>
             {!collapsed && (
-              <span className="asp-comprehension-home-menu-logo-title">个人桌面端工具箱</span>
+              <span className="asp-comprehension-home-menu-logo-title">不知道叫啥的某系统</span>
             )}
           </div>
         </div>
