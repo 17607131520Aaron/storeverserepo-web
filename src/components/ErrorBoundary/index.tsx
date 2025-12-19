@@ -2,25 +2,25 @@ import React, { Component, type ErrorInfo, type ReactNode } from "react";
 
 import { reportClientIssue } from "@/utils/errorReporter";
 
-interface ErrorBoundaryProps {
+interface IErrorBoundaryProps {
   children: ReactNode;
   scope?: string;
   fallback?: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface IErrorBoundaryState {
   hasError: boolean;
   message?: string;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
+class ErrorBoundary extends Component<IErrorBoundaryProps, IErrorBoundaryState> {
+  public state: IErrorBoundaryState = {
     hasError: false,
     message: "",
   };
 
-  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, message: error?.message || "未知错误" };
+  public static getDerivedStateFromError(error: Error): IErrorBoundaryState {
+    return { hasError: true, message: String(error?.message || "未知错误") };
   }
 
   public componentDidCatch(error: Error, info: ErrorInfo): void {
@@ -29,13 +29,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       scope: this.props.scope || "App",
       message: error?.message || "组件渲染异常",
       stack: error?.stack,
-      componentStack: info.componentStack,
+      componentStack: info.componentStack || undefined,
     });
   }
-
-  private handleRetry = (): void => {
-    this.setState({ hasError: false, message: "" });
-  };
 
   public render(): ReactNode {
     if (this.state.hasError) {
@@ -60,7 +56,6 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           <div style={{ color: "#8c8c8c" }}>{this.state.message || "请稍后重试"}</div>
           <div style={{ display: "flex", gap: 12 }}>
             <button
-              onClick={() => window.location.reload()}
               style={{
                 padding: "8px 16px",
                 borderRadius: 6,
@@ -69,11 +64,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 color: "#fff",
                 cursor: "pointer",
               }}
+              onClick={() => window.location.reload()}
             >
               刷新页面
             </button>
             <button
-              onClick={this.handleRetry}
               style={{
                 padding: "8px 16px",
                 borderRadius: 6,
@@ -82,6 +77,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 color: "#595959",
                 cursor: "pointer",
               }}
+              onClick={this.handleRetry}
             >
               重试
             </button>
@@ -92,6 +88,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
     return this.props.children;
   }
+
+  private handleRetry = (): void => {
+    this.setState({ hasError: false, message: "" });
+  };
 }
 
 export default ErrorBoundary;
