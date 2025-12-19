@@ -42,7 +42,6 @@ function getRowKey<RecordType>(
   return index;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function VirtualTableComponent<RecordType>({
   columns,
   dataSource,

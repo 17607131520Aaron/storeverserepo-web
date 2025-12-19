@@ -179,10 +179,10 @@ export default [
         //   selector: "variable",
         //   format: ["camelCase", "UPPER_CASE"],
         // },
-        {
-          selector: "function",
-          format: ["camelCase"],
-        },
+        // {
+        //   selector: "function",
+        //   format: ["camelCase"],
+        // },
       ],
       "@typescript-eslint/member-ordering": [
         "error",
