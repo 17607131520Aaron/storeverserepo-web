@@ -17,12 +17,14 @@ interface ITabsContextType {
   tabs: ITabItem[];
   activeKey: string;
   refreshKey: string;
+  refreshingKey: string | null;
   addTab: (path: string) => void;
   removeTab: (key: string) => void;
   setActiveTab: (key: string) => void;
   closeOtherTabs: (key: string) => void;
   closeAllTabs: () => void;
   refreshTab: (key: string) => void;
+  setRefreshingKey: (key: string | null) => void;
 }
 
 const TabsContext = createContext<ITabsContextType | undefined>(undefined);
@@ -67,6 +69,7 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ]);
   const [activeKey, setActiveKey] = useState<string>("/");
   const [refreshKey, setRefreshKey] = useState<string>("");
+  const [refreshingKey, setRefreshingKey] = useState<string | null>(null);
 
   // 添加标签
   const addTab = useCallback((path: string) => {
@@ -154,6 +157,9 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (key: string) => {
       const tab = tabs.find((t) => t.key === key);
       if (tab) {
+        // 设置刷新状态
+        setRefreshingKey(key);
+
         // 触发页面刷新事件，让页面组件可以监听并重新加载数据
         window.dispatchEvent(
           new CustomEvent("tab-refresh", {
@@ -162,7 +168,8 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
 
         // 更新 refreshKey 来强制重新渲染
-        setRefreshKey(`${tab.path}-${Date.now()}`);
+        const newRefreshKey = `${tab.path}-${Date.now()}`;
+        setRefreshKey(newRefreshKey);
 
         // 如果刷新的是当前活动标签，直接更新 refreshKey 即可
         // 如果刷新的是非活动标签，先切换到该标签
@@ -192,12 +199,14 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tabs,
         activeKey,
         refreshKey,
+        refreshingKey,
         addTab,
         removeTab,
         setActiveTab,
         closeOtherTabs,
         closeAllTabs,
         refreshTab,
+        setRefreshingKey,
       }}
     >
       {children}

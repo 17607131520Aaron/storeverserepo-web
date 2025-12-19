@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ import {
   MenuUnfoldOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Layout, Menu, Space, Typography } from "antd";
+import { Avatar, Dropdown, Layout, Menu, Space, Spin, Typography } from "antd";
 
 import { menuItems, userMenuItems } from "./constants";
 import TabsBar from "./TabsBar";
@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshKey } = useTabs();
+  const { refreshKey, refreshingKey, setRefreshingKey } = useTabs();
 
   // 获取当前选中的菜单项
   const selectedKeys = useMemo(() => {
@@ -109,6 +109,24 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // 监听 refreshKey 变化，当组件重新挂载后清除 loading
+  useEffect(() => {
+    if (refreshingKey && refreshKey) {
+      // 延迟清除 loading，确保组件已经重新挂载并开始渲染
+      const timer = setTimeout(() => {
+        setRefreshingKey(null);
+      }, 300);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+    return undefined;
+  }, [refreshKey, refreshingKey, setRefreshingKey]);
+
+  // 判断当前页面是否正在刷新
+  const currentPath = location.pathname || "/";
+  const isRefreshing = refreshingKey !== null && refreshingKey === currentPath;
+
   return (
     <Layout className="asp-comprehension-home" style={{ height: "100vh", overflow: "hidden" }}>
       <Sider
@@ -183,7 +201,16 @@ const AppContent: React.FC = () => {
 
         <Content className="asp-comprehension-home-content">
           <div className="asp-comprehension-home-content-wrapper">
-            <Outlet key={`${location.pathname}-${refreshKey}`} />
+            <Spin
+              size="large"
+              spinning={isRefreshing}
+              style={{ minHeight: "100%" }}
+              tip="页面刷新中..."
+            >
+              <div style={{ minHeight: "100%" }}>
+                <Outlet key={`${location.pathname}-${refreshKey}`} />
+              </div>
+            </Spin>
           </div>
         </Content>
       </Layout>
