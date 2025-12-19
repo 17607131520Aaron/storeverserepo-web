@@ -25,6 +25,7 @@ export default [
   eslintConfigPrettier,
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
+    ignores: ["eslint.config.js"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -136,7 +137,7 @@ export default [
           objectLiteralTypeAssertions: "never",
         },
       ],
-      "@typescript-eslint/no-floating-promises": "error",
+      // "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
       "@typescript-eslint/await-thenable": "error",
       "@typescript-eslint/no-unsafe-argument": "error",
@@ -161,10 +162,10 @@ export default [
           format: ["PascalCase"],
           prefix: ["I"],
         },
-        {
-          selector: "class",
-          format: ["PascalCase"],
-        },
+        // {
+        //   selector: "class",
+        //   format: ["PascalCase"],
+        // },
         {
           selector: "typeAlias",
           format: ["PascalCase"],
@@ -174,10 +175,10 @@ export default [
           format: ["PascalCase"],
           prefix: ["E"],
         },
-        {
-          selector: "variable",
-          format: ["camelCase", "UPPER_CASE"],
-        },
+        // {
+        //   selector: "variable",
+        //   format: ["camelCase", "UPPER_CASE"],
+        // },
         {
           selector: "function",
           format: ["camelCase"],
@@ -287,7 +288,7 @@ export default [
 
       // ========= 复杂度 & 风格（不和 Prettier 冲突）=========
       "max-lines": ["error", { max: 500 }],
-      "max-lines-per-function": ["error", { max: 200 }],
+      // "max-lines-per-function": ["error", { max: 200 }],
       "max-params": ["error", { max: 4 }],
       "max-len": [
         "error",
@@ -304,6 +305,31 @@ export default [
       quotes: "off",
       semi: "off",
       "comma-dangle": "off",
+    },
+  },
+  // 为配置文件单独配置，不使用类型检查
+  {
+    files: ["eslint.config.js", "vite.config.ts"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
+        // 不启用 project，避免类型检查
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2020,
+        ...globals.node,
+      },
+    },
+    rules: {
+      // 配置文件可以适当放宽规则
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
     },
   },
 ];

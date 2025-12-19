@@ -1,8 +1,6 @@
 import { lazy } from 'react';
 
-import { createHashRouter } from 'react-router-dom';
-
-import type { DataRouter } from 'react-router-dom';
+import { createHashRouter, type DataRouter } from "react-router-dom";
 
 const LayoutHome = lazy(() => import('@/app'));
 const Home = lazy(() => import('@/pages/Home'));

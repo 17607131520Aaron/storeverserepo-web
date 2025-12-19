@@ -1,17 +1,18 @@
 import React, { useMemo, useState } from 'react';
 
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+
 import {
   AppstoreOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import { Avatar, Dropdown, Layout, Menu, Space, Typography } from 'antd';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+} from "@ant-design/icons";
+import { Avatar, Dropdown, Layout, Menu, Space, Typography } from "antd";
 
-import { menuItems, userMenuItems } from './constants';
+import { menuItems, userMenuItems } from "./constants";
 
-import './app.scss';
+import "./app.scss";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -23,23 +24,23 @@ const App: React.FC = () => {
 
   // 获取当前选中的菜单项
   const selectedKeys = useMemo(() => {
-    const path = location.pathname || '/';
+    const path = location.pathname || "/";
     const keys: string[] = [];
 
     // 遍历菜单项找到匹配的路径
     menuItems?.forEach((item) => {
-      if (!item || typeof item === 'string') {
+      if (!item || typeof item === "string") {
         return;
       }
 
       // 精确匹配首页
-      if (item.key === '/' && (path === '/' || path === '')) {
-        keys.push('/');
+      if (item.key === "/" && (path === "/" || path === "")) {
+        keys.push("/");
       } else if (item.key === path) {
         keys.push(path);
-      } else if ('children' in item && item.children) {
+      } else if ("children" in item && item.children) {
         item.children.forEach((child) => {
-          if (child && typeof child !== 'string' && child.key === path) {
+          if (child && typeof child !== "string" && child.key === path) {
             keys.push(path);
           }
         });
@@ -47,7 +48,7 @@ const App: React.FC = () => {
     });
 
     // 如果没有匹配到，默认选中首页
-    return keys.length > 0 ? keys : ['/'];
+    return keys.length > 0 ? keys : ["/"];
   }, [location.pathname]);
 
   // 计算需要展开的菜单 keys
@@ -55,13 +56,13 @@ const App: React.FC = () => {
     const keysToOpen: string[] = [];
 
     menuItems?.forEach((item) => {
-      if (!item || typeof item === 'string') {
+      if (!item || typeof item === "string") {
         return;
       }
 
-      if ('children' in item && item.children) {
+      if ("children" in item && item.children) {
         const hasMatch = item.children.some(
-          (child) => child && typeof child !== 'string' && child.key === path,
+          (child) => child && typeof child !== "string" && child.key === path,
         );
         if (hasMatch && item.key) {
           keysToOpen.push(item.key as string);
@@ -74,44 +75,44 @@ const App: React.FC = () => {
 
   // 初始化时计算默认展开的菜单
   const [openKeys, setOpenKeys] = useState<string[]>(() => {
-    const path = location.pathname || '/';
+    const path = location.pathname || "/";
     return getKeysToOpen(path);
   });
 
   // 菜单点击处理
-  const handleMenuClick = ({ key }: { key: string }) => {
+  const handleMenuClick = ({ key }: { key: string }): void => {
     // 只处理叶子节点（有实际路径的菜单项）
-    if (key.startsWith('/')) {
+    if (key.startsWith("/")) {
       navigate(key);
     }
   };
 
   // 菜单展开/收起处理
-  const handleOpenChange = (keys: string[]) => {
+  const handleOpenChange = (keys: string[]): void => {
     setOpenKeys(keys);
   };
 
   // 用户菜单点击处理
-  const handleUserMenuClick = ({ key }: { key: string }) => {
-    if (key === 'logout') {
+  const handleUserMenuClick = ({ key }: { key: string }): void => {
+    if (key === "logout") {
       // 处理退出登录逻辑
-      navigate('/login');
-    } else if (key === 'profile') {
+      navigate("/login");
+    } else if (key === "profile") {
       // 处理个人中心跳转
-      navigate('/profile');
-    } else if (key === 'settings') {
+      navigate("/profile");
+    } else if (key === "settings") {
       // 处理账户设置跳转
-      navigate('/settings/basic');
+      navigate("/settings/basic");
     }
   };
 
   return (
-    <Layout className="asp-comprehension-home" style={{ height: '100vh', overflow: 'hidden' }}>
+    <Layout className="asp-comprehension-home" style={{ height: "100vh", overflow: "hidden" }}>
       <Sider
-        trigger={null}
         collapsible
-        collapsed={collapsed}
         className="asp-comprehension-home-menu"
+        collapsed={collapsed}
+        trigger={null}
         width={240}
       >
         <div className="asp-comprehension-home-menu-header">
@@ -128,18 +129,18 @@ const App: React.FC = () => {
         <div className="asp-comprehension-home-menu-divider" />
 
         <Menu
-          theme="light"
-          mode="inline"
-          selectedKeys={selectedKeys}
-          openKeys={openKeys}
+          className="asp-comprehension-home-menu-content"
           items={menuItems}
+          mode="inline"
+          openKeys={openKeys}
+          selectedKeys={selectedKeys}
+          theme="light"
           onClick={handleMenuClick}
           onOpenChange={handleOpenChange}
-          className="asp-comprehension-home-menu-content"
         />
       </Sider>
 
-      <Layout style={{ height: '100%', overflow: 'hidden' }}>
+      <Layout style={{ height: "100%", overflow: "hidden" }}>
         <Header className="asp-comprehension-home-header">
           <div className="asp-comprehension-home-header-content">
             <div className="asp-comprehension-home-header-left">
@@ -161,14 +162,14 @@ const App: React.FC = () => {
               >
                 <Space
                   className="asp-comprehension-home-header-content-user"
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   <Avatar
-                    size={32}
                     icon={<UserOutlined />}
-                    style={{ backgroundColor: '#237ffa' }}
+                    size={32}
+                    style={{ backgroundColor: "#237ffa" }}
                   />
-                  <Text style={{ fontSize: 14, color: '#595959' }}>管理员</Text>
+                  <Text style={{ fontSize: 14, color: "#595959" }}>管理员</Text>
                 </Space>
               </Dropdown>
             </div>

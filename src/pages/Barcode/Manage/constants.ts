@@ -1,5 +1,5 @@
 export type CodeType = 'QRCODE' | 'CODE128' | 'EAN13' | 'EAN8' | 'UPC' | 'CODE39';
-export interface GeneratedCode {
+export interface IGeneratedCode {
   id: string;
   value: string;
   type: CodeType;

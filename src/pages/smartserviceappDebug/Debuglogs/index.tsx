@@ -66,11 +66,11 @@ const RNDebugLogs: React.FC = () => {
           <Space>
             <Text strong>端口：</Text>
             <InputNumber
-              value={port}
-              min={1}
               max={9999}
-              style={{ width: 120 }}
+              min={1}
               placeholder="请输入端口"
+              style={{ width: 120 }}
+              value={port}
               onChange={(value: number | null) => {
                 if (typeof value === "number") {
                   setPort(value);
@@ -82,9 +82,9 @@ const RNDebugLogs: React.FC = () => {
           <Space>
             <Text strong>连接模式：</Text>
             <Select
-              value={connectionMode}
-              style={{ width: 120 }}
               options={connectionModeOptions}
+              style={{ width: 120 }}
+              value={connectionMode}
               onChange={(value: ConnectionMode) => setConnectionMode(value)}
             />
           </Space>
@@ -93,8 +93,8 @@ const RNDebugLogs: React.FC = () => {
             <Tooltip title="连接">
               <Button
                 icon={<ReloadOutlined />}
-                type="primary"
                 loading={isConnecting}
+                type="primary"
                 onClick={handleConnectClick}
               >
                 {isConnected ? "重连" : "连接"}
@@ -110,15 +110,15 @@ const RNDebugLogs: React.FC = () => {
 
           <Space style={{ marginLeft: "auto" }}>
             <Select
-              placeholder="日志级别"
-              value={levelFilter}
-              style={{ width: "100px" }}
               options={levelOptions || []}
+              placeholder="日志级别"
+              style={{ width: "100px" }}
+              value={levelFilter}
               onChange={(value: string) => setLevelFilter(value)}
             />
             <Search
-              placeholder="搜索日志..."
               allowClear
+              placeholder="搜索日志..."
               style={{ width: 400 }}
               value={searchText}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
@@ -137,7 +137,7 @@ const RNDebugLogs: React.FC = () => {
                   ? "已连接，等待日志输出..."
                   : "未连接，请点击连接按钮连接到 Metro bundler"}
               </Text>
-              <Text type="secondary" style={{ fontSize: "12px", marginTop: 8 }}>
+              <Text style={{ fontSize: "12px", marginTop: 8 }} type="secondary">
                 默认端口: {DEFAULT_PORT}
               </Text>
             </div>

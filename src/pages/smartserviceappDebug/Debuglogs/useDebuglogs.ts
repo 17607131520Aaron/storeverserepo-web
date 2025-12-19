@@ -13,7 +13,7 @@ export type ConnectionMode = "adb" | "websocket";
 
 export type LogLevel = "log" | "info" | "warn" | "error" | "debug";
 
-export interface JsLogItem {
+export interface IJsLogItem {
   id: string;
   timestamp: number;
   level: LogLevel | "unknown";
@@ -21,17 +21,32 @@ export interface JsLogItem {
   raw: unknown;
 }
 
-interface MetroLogMessage {
+interface IMetroLogMessage {
   level?: string;
   data?: unknown[];
   message?: unknown;
   [key: string]: unknown;
 }
 
-export const useDebuglogs = () => {
+export const useDebuglogs = (): {
+  port: number;
+  setPort: React.Dispatch<React.SetStateAction<number>>;
+  connectionMode: ConnectionMode;
+  setConnectionMode: React.Dispatch<React.SetStateAction<ConnectionMode>>;
+  isConnecting: boolean;
+  isConnected: boolean;
+  logs: IJsLogItem[];
+  levelFilter: string;
+  setLevelFilter: React.Dispatch<React.SetStateAction<string>>;
+  searchText: string;
+  setSearchText: React.Dispatch<React.SetStateAction<string>>;
+  filteredLogs: IJsLogItem[];
+  handleConnectClick: () => void;
+  handleClearLogs: () => void;
+} => {
   const [port, setPort] = useState<number>(DEFAULT_PORT);
   const [connectionMode, setConnectionMode] = useState<ConnectionMode>("websocket");
-  const [logs, setLogs] = useState<JsLogItem[]>([]);
+  const [logs, setLogs] = useState<IJsLogItem[]>([]);
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [searchText, setSearchText] = useState<string>("");
   const [shouldConnect, setShouldConnect] = useState(false);
@@ -59,7 +74,7 @@ export const useDebuglogs = () => {
     });
   }, [logs, levelFilter, searchText]);
 
-  const appendLog = useCallback((log: JsLogItem) => {
+  const appendLog = useCallback((log: IJsLogItem) => {
     setLogs((prev) => {
       const next = [...prev, log];
       if (next.length > DEFAULT_MAX_LOGS) {
@@ -69,8 +84,8 @@ export const useDebuglogs = () => {
     });
   }, []);
 
-  const parseMetroMessage = useCallback((data: unknown): JsLogItem => {
-    let level: JsLogItem["level"] = "unknown";
+  const parseMetroMessage = useCallback((data: unknown): IJsLogItem => {
+    let level: IJsLogItem["level"] = "unknown";
     let message = "";
     let raw: unknown = data;
 
@@ -81,7 +96,7 @@ export const useDebuglogs = () => {
 
       // Metro logger 常见格式：{ level, data, type }
       if (parsed && typeof parsed === "object") {
-        const metroData = parsed as MetroLogMessage;
+        const metroData = parsed as IMetroLogMessage;
         if (typeof metroData.level === "string") {
           level = metroData.level as LogLevel;
         }
@@ -98,7 +113,7 @@ export const useDebuglogs = () => {
               }
             })
             .join(" ");
-        } else if (metroData.message != null) {
+        } else if (metroData.message !== null) {
           message = String(metroData.message);
         } else {
           message = JSON.stringify(metroData);
@@ -120,7 +135,7 @@ export const useDebuglogs = () => {
   }, []);
 
   // 使用 WebSocket hook，充分利用其回调功能
-  const { isConnected, isConnecting, error, connect, disconnect, lastMessage } = useWebSocket({
+  const { isConnected, isConnecting, error, connect, disconnect } = useWebSocket({
     url: wsUrl,
     autoConnect: false,
     reconnect: true,
