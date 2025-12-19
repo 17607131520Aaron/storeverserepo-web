@@ -27,13 +27,15 @@ interface INormalizedPayload extends IClientIssuePayload {
 
 let hasInitGlobalListener = false;
 let currentReportSender: ReportSender = async (normalized) => {
-  await fetch("/mock-api/client-error-report", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(normalized),
-  });
+  console.log(normalized, "normalized上报错误");
+
+  // await fetch("/mock-api/client-error-report", {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify(normalized),
+  // });
 };
 
 const buildPayload = (payload: IClientIssuePayload): INormalizedPayload => {
