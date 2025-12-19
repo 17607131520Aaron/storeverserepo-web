@@ -8,7 +8,7 @@ import { Alert, Button, Form, Input, Typography } from "antd";
 
 import useAuth from "@/hooks/useAuth";
 
-import "./index.scss";
+import "./index.module.scss";
 
 const { Title, Text } = Typography;
 

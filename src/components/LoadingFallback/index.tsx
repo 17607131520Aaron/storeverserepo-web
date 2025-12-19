@@ -2,7 +2,7 @@ import React from "react";
 
 import { Spin } from "antd";
 
-import "./index.scss";
+import "./index.module.scss";
 
 const LoadingFallback: React.FC = () => {
   return (
