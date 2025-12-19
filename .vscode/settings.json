@@ -89,8 +89,8 @@
   "editor.insertSpaces": true,
   // 禁用自动检测缩进，强制使用配置
   "editor.detectIndentation": false,
-  // 行宽标尺为 100（与 .prettierrc 中的 printWidth: 100 一致）
-  "editor.rulers": [100],
+  // 行宽标尺为 120（与 .prettierrc 中的 printWidth: 120 一致）
+  "editor.rulers": [120],
   // 关闭自动换行
   "editor.wordWrap": "off",
   // 格式化模式：仅在可用时格式化修改的文件

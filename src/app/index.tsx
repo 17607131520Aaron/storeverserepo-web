@@ -2,14 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import {
-  AppstoreOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Layout, Menu, Space, Spin, Typography } from "antd";
 
+import useAuth from "@/hooks/useAuth";
 import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
 
 import { menuItems, userMenuItems } from "./constants";
@@ -28,6 +24,7 @@ const AppContent: React.FC = () => {
   const { refreshKey, refreshingKey, setRefreshingKey, isTabSwitching } = useTabs();
   const [isPageLoading, setIsPageLoading] = useState(false);
   const prevPathRef = useRef<string | null>(null);
+  const { logout } = useAuth();
 
   // 获取当前选中的菜单项
   const selectedKeys = useMemo(() => {
@@ -68,9 +65,7 @@ const AppContent: React.FC = () => {
       }
 
       if ("children" in item && item.children) {
-        const hasMatch = item.children.some(
-          (child) => child && typeof child !== "string" && child.key === path,
-        );
+        const hasMatch = item.children.some((child) => child && typeof child !== "string" && child.key === path);
         if (hasMatch && item.key) {
           keysToOpen.push(item.key as string);
         }
@@ -103,7 +98,9 @@ const AppContent: React.FC = () => {
   const handleUserMenuClick = ({ key }: { key: string }): void => {
     if (key === "logout") {
       // 处理退出登录逻辑
-      navigate("/login");
+      void logout().then(() => {
+        navigate("/login", { replace: true });
+      });
     } else if (key === "profile") {
       // 处理个人中心跳转
       navigate("/profile");
@@ -118,11 +115,7 @@ const AppContent: React.FC = () => {
     const currentPath = location.pathname || "/";
 
     // 如果路径变化（且不是初次加载，且不是标签切换），显示 loading
-    if (
-      prevPathRef.current !== null &&
-      prevPathRef.current !== currentPath &&
-      !isTabSwitching
-    ) {
+    if (prevPathRef.current !== null && prevPathRef.current !== currentPath && !isTabSwitching) {
       setIsPageLoading(true);
 
       // 延迟清除 loading，确保组件已经加载完成
@@ -181,9 +174,7 @@ const AppContent: React.FC = () => {
             <div className="asp-comprehension-home-menu-logo-icon">
               <AppstoreOutlined />
             </div>
-            {!collapsed && (
-              <span className="asp-comprehension-home-menu-logo-title">不知道叫啥的某系统</span>
-            )}
+            {!collapsed && <span className="asp-comprehension-home-menu-logo-title">不知道叫啥的某系统</span>}
           </div>
         </div>
 
@@ -205,10 +196,7 @@ const AppContent: React.FC = () => {
         <Header className="asp-comprehension-home-header">
           <div className="asp-comprehension-home-header-content">
             <div className="asp-comprehension-home-header-left">
-              <div
-                className="asp-comprehension-home-header-toggle"
-                onClick={() => setCollapsed(!collapsed)}
-              >
+              <div className="asp-comprehension-home-header-toggle" onClick={() => setCollapsed(!collapsed)}>
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               </div>
             </div>
@@ -221,15 +209,8 @@ const AppContent: React.FC = () => {
                 }}
                 placement="bottomRight"
               >
-                <Space
-                  className="asp-comprehension-home-header-content-user"
-                  style={{ cursor: "pointer" }}
-                >
-                  <Avatar
-                    icon={<UserOutlined />}
-                    size={32}
-                    style={{ backgroundColor: "#237ffa" }}
-                  />
+                <Space className="asp-comprehension-home-header-content-user" style={{ cursor: "pointer" }}>
+                  <Avatar icon={<UserOutlined />} size={32} style={{ backgroundColor: "#237ffa" }} />
                   <Text style={{ fontSize: 14, color: "#595959" }}>管理员</Text>
                 </Space>
               </Dropdown>

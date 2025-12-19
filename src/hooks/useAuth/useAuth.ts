@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useUserInfoStore, type IUserInfo } from "@/store";
 import { deleteProjectInfo, getProjectInfo, saveProjectInfo } from "@/utils/indexedDBStorage";
 
 const AUTH_STORAGE_KEY = "auth_info";
@@ -37,6 +38,7 @@ const useAuth = (): IUseAuthResult => {
     expiresAt: null,
   });
   const [loading, setLoading] = useState(true);
+  const { setUser: setStoreUser, logout: storeLogout } = useUserInfoStore();
 
   // 初始化时从 IndexedDB 中恢复登录态
   useEffect(() => {
@@ -55,6 +57,7 @@ const useAuth = (): IUseAuthResult => {
         // token 过期：清理本地状态
         if (expiresAt !== null && expiresAt <= now) {
           await deleteProjectInfo(AUTH_STORAGE_KEY);
+          storeLogout();
           return;
         }
 
@@ -64,6 +67,10 @@ const useAuth = (): IUseAuthResult => {
             user: stored.user ?? null,
             expiresAt,
           });
+          // 同步用户信息到 store（不包括 token）
+          if (stored.user) {
+            setStoreUser(stored.user as IUserInfo);
+          }
         }
       } catch (error) {
         console.warn("恢复登录状态失败（已忽略）：", error);
@@ -79,32 +86,41 @@ const useAuth = (): IUseAuthResult => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [setStoreUser, storeLogout]);
 
   const login = useCallback(
     async (token: string, user: IAuthUser, expiresAt?: number | null): Promise<void> => {
-      const normalizedExpiresAt =
-        typeof expiresAt === "number" && Number.isFinite(expiresAt) ? expiresAt : null;
+      const normalizedExpiresAt = typeof expiresAt === "number" && Number.isFinite(expiresAt) ? expiresAt : null;
 
       const nextState: IAuthState = { token, user, expiresAt: normalizedExpiresAt };
       setState(nextState);
+
+      // 保存 token 和登录账号信息到 IndexedDB
       try {
         await saveProjectInfo(AUTH_STORAGE_KEY, nextState);
       } catch (error) {
         console.warn("保存登录信息失败（已忽略）：", error);
       }
+
+      // 保存用户信息（不包括 token）到 store
+      setStoreUser(user as IUserInfo);
     },
-    [],
+    [setStoreUser],
   );
 
   const logout = useCallback(async (): Promise<void> => {
     setState({ token: null, user: null, expiresAt: null });
+
+    // 清除 IndexedDB 中的登录信息
     try {
       await deleteProjectInfo(AUTH_STORAGE_KEY);
     } catch (error) {
       console.warn("清理登录信息失败（已忽略）：", error);
     }
-  }, []);
+
+    // 清除 store 中的用户信息
+    storeLogout();
+  }, [storeLogout]);
 
   const tokenExpired = useMemo(() => {
     if (!state.token) {
