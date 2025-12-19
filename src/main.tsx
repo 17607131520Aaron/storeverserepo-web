@@ -6,6 +6,8 @@ import { ConfigProvider } from "antd";
 import ZhCN from "antd/locale/zh_CN";
 import { createRoot } from "react-dom/client";
 
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ErrorReportingProvider from "@/components/ErrorReportingProvider";
 import LoadingFallback from "@/components/LoadingFallback";
 import PerformanceMonitorWrapper from "@/components/PerformanceMonitorWrapper";
 
@@ -16,11 +18,15 @@ const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
 
 root.render(
-  <ConfigProvider locale={ZhCN}>
-    <PerformanceMonitorWrapper>
-      <Suspense fallback={<LoadingFallback />}>
-        <RouterProvider router={routers} />
-      </Suspense>
-    </PerformanceMonitorWrapper>
-  </ConfigProvider>,
+  <ErrorReportingProvider>
+    <ErrorBoundary scope="AppRoot">
+      <ConfigProvider locale={ZhCN}>
+        <PerformanceMonitorWrapper>
+          <Suspense fallback={<LoadingFallback />}>
+            <RouterProvider router={routers} />
+          </Suspense>
+        </PerformanceMonitorWrapper>
+      </ConfigProvider>
+    </ErrorBoundary>
+  </ErrorReportingProvider>,
 );

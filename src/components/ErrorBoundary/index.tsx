@@ -1,0 +1,97 @@
+import React, { Component, type ErrorInfo, type ReactNode } from "react";
+
+import { reportClientIssue } from "@/utils/errorReporter";
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  scope?: string;
+  fallback?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  message?: string;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = {
+    hasError: false,
+    message: "",
+  };
+
+  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, message: error?.message || "未知错误" };
+  }
+
+  public componentDidCatch(error: Error, info: ErrorInfo): void {
+    reportClientIssue({
+      type: "react-render",
+      scope: this.props.scope || "App",
+      message: error?.message || "组件渲染异常",
+      stack: error?.stack,
+      componentStack: info.componentStack,
+    });
+  }
+
+  private handleRetry = (): void => {
+    this.setState({ hasError: false, message: "" });
+  };
+
+  public render(): ReactNode {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      return (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            color: "#1f1f1f",
+            background: "#f5f5f5",
+          }}
+        >
+          <div style={{ fontSize: 18, fontWeight: 600 }}>页面出错了</div>
+          <div style={{ color: "#8c8c8c" }}>{this.state.message || "请稍后重试"}</div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 6,
+                border: "1px solid #1677ff",
+                background: "#1677ff",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              刷新页面
+            </button>
+            <button
+              onClick={this.handleRetry}
+              style={{
+                padding: "8px 16px",
+                borderRadius: 6,
+                border: "1px solid #d9d9d9",
+                background: "#fff",
+                color: "#595959",
+                cursor: "pointer",
+              }}
+            >
+              重试
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;

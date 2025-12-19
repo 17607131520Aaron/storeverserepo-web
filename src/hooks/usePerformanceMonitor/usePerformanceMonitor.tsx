@@ -220,5 +220,3 @@ export const usePerformanceMonitor = (): {
     logPagePerformance,
   };
 };
-
-export default PerformanceMonitor;
