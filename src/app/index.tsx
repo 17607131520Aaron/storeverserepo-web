@@ -2,8 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Dropdown, Layout, Menu, Space, Spin, Typography } from "antd";
+import {
+  AppstoreOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Avatar, Dropdown, Input, Layout, Menu, Popover, Space, Spin, Typography } from "antd";
 
 import useAuth from "@/hooks/useAuth";
 import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
@@ -19,6 +25,8 @@ const { Text } = Typography;
 
 const AppContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [searchPopoverOpen, setSearchPopoverOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshKey, refreshingKey, setRefreshingKey, isTabSwitching } = useTabs();
@@ -80,6 +88,85 @@ const AppContent: React.FC = () => {
     const path = location.pathname || "/";
     return getKeysToOpen(path);
   });
+
+  // 过滤菜单项
+  const filterMenuItems = (items: typeof menuItems, searchText: string): typeof menuItems => {
+    if (!searchText.trim()) {
+      return items;
+    }
+
+    const filtered: typeof menuItems = [];
+
+    items?.forEach((item) => {
+      if (!item || typeof item === "string" || item.type === "divider") {
+        return;
+      }
+
+      const label = "label" in item && item.label ? item.label.toString().toLowerCase() : "";
+      const searchLower = searchText.toLowerCase();
+
+      // 如果是一级菜单，检查自身和子菜单
+      if ("children" in item && item.children) {
+        const filteredChildren = item.children.filter((child) => {
+          if (!child || typeof child === "string" || child.type === "divider") {
+            return false;
+          }
+          const childLabel = "label" in child && child.label ? child.label.toString().toLowerCase() : "";
+          return childLabel.includes(searchLower);
+        });
+
+        // 如果父菜单标题匹配或子菜单有匹配项，则保留
+        if (label.includes(searchLower) || filteredChildren.length > 0) {
+          filtered.push({
+            ...item,
+            children: filteredChildren.length > 0 ? filteredChildren : item.children,
+          });
+        }
+      } else {
+        // 没有子菜单的项，直接检查标题
+        if (label.includes(searchLower)) {
+          filtered.push(item);
+        }
+      }
+    });
+
+    return filtered;
+  };
+
+  // 根据搜索值过滤菜单
+  const filteredMenuItems = useMemo(() => {
+    return filterMenuItems(menuItems, searchValue);
+  }, [searchValue]);
+
+  // 搜索时自动展开匹配的菜单
+  useEffect(() => {
+    if (searchValue.trim()) {
+      const keysToOpen: string[] = [];
+      menuItems?.forEach((item) => {
+        if (!item || typeof item === "string" || item.type === "divider") {
+          return;
+        }
+        if ("children" in item && item.children) {
+          const hasMatch = item.children.some((child) => {
+            if (!child || typeof child === "string" || child.type === "divider") {
+              return false;
+            }
+            const childLabel = "label" in child && child.label ? child.label.toString().toLowerCase() : "";
+            return childLabel.includes(searchValue.toLowerCase());
+          });
+          if (hasMatch && item.key) {
+            keysToOpen.push(item.key as string);
+          }
+        }
+      });
+      setOpenKeys(keysToOpen);
+    } else {
+      // 清空搜索时，恢复默认展开状态
+      const path = location.pathname || "/";
+      setOpenKeys(getKeysToOpen(path));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValue]);
 
   // 菜单点击处理
   const handleMenuClick = ({ key }: { key: string }): void => {
@@ -178,11 +265,48 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
+        {!collapsed ? (
+          <div className="asp-comprehension-home-menu-search">
+            <Input
+              allowClear
+              placeholder="搜索菜单"
+              prefix={<SearchOutlined />}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+          </div>
+        ) : (
+          <div className="asp-comprehension-home-menu-search-collapsed">
+            <Popover
+              content={
+                <Input
+                  allowClear
+                  autoFocus
+                  placeholder="搜索菜单"
+                  prefix={<SearchOutlined />}
+                  style={{ width: 240 }}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+              }
+              open={searchPopoverOpen}
+              placement="rightTop"
+              title="搜索菜单"
+              trigger="click"
+              onOpenChange={setSearchPopoverOpen}
+            >
+              <div className="asp-comprehension-home-menu-search-icon">
+                <SearchOutlined />
+              </div>
+            </Popover>
+          </div>
+        )}
+
         <div className="asp-comprehension-home-menu-divider" />
 
         <Menu
           className="asp-comprehension-home-menu-content"
-          items={menuItems}
+          items={filteredMenuItems}
           mode="inline"
           openKeys={openKeys}
           selectedKeys={selectedKeys}
