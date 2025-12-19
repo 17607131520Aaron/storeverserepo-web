@@ -39,7 +39,7 @@ const columns = [
   },
 ];
 
-const mockData: IDocumentRecord[] = Array.from({ length: 10000 }).map((_item, index) => ({
+const mockData: IDocumentRecord[] = Array.from({ length: 1000 }).map((_item, index) => ({
   id: index + 1,
   name: `已删除文档-${index + 1}`,
   type: index % 3 === 0 ? "PDF" : index % 3 === 1 ? "Word" : "图片",
@@ -51,7 +51,7 @@ const DocumentsTrash: React.FC = () => {
   return (
     <div style={{ padding: "24px 0" }}>
       <Title level={2} style={{ marginBottom: 24, color: "#1f2937", fontWeight: 600 }}>
-        回收站(基础表格渲染10000条数据)
+        回收站(基础表格渲染1000条数据)
       </Title>
 
       <div
