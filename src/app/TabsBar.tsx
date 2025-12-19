@@ -67,6 +67,8 @@ const TabsBar: React.FC = () => {
     }
   };
 
+  console.log(tabs, "tabs");
+
   return (
     <div className="asp-tabs-bar">
       <div ref={tabsContainerRef} className="asp-tabs-bar-container">
@@ -80,13 +82,15 @@ const TabsBar: React.FC = () => {
               onClick={(e) => handleTabClick(tab, e)}
               onContextMenu={(e) => handleContextMenu(tab, e)}
             >
-              <span
-                className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
-                title="刷新页面"
-                onClick={(e) => handleRefresh(tab, e)}
-              >
-                <ReloadOutlined />
-              </span>
+              {isActive && (
+                <span
+                  className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
+                  title="刷新页面"
+                  onClick={(e) => handleRefresh(tab, e)}
+                >
+                  <ReloadOutlined />
+                </span>
+              )}
               <span className="asp-tabs-bar-item-label">{tab.label}</span>
               {tab.closable && (
                 <span className="asp-tabs-bar-item-close" title="关闭标签" onClick={(e) => handleClose(tab, e)}>
