@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -24,6 +24,8 @@ const AppContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshKey, refreshingKey, setRefreshingKey } = useTabs();
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  const prevPathRef = useRef<string | null>(null);
 
   // 获取当前选中的菜单项
   const selectedKeys = useMemo(() => {
@@ -109,6 +111,31 @@ const AppContent: React.FC = () => {
     }
   };
 
+  // 监听路由变化，显示页面加载 loading
+  useEffect(() => {
+    const currentPath = location.pathname || "/";
+
+    // 如果路径变化（且不是初次加载），显示 loading
+    if (prevPathRef.current !== null && prevPathRef.current !== currentPath) {
+      setIsPageLoading(true);
+
+      // 延迟清除 loading，确保组件已经加载完成
+      const timer = setTimeout(() => {
+        setIsPageLoading(false);
+      }, 300);
+
+      prevPathRef.current = currentPath;
+
+      return () => {
+        clearTimeout(timer);
+      };
+    } else {
+      // 初次加载或路径未变化，更新 ref 但不显示 loading
+      prevPathRef.current = currentPath;
+    }
+    return undefined;
+  }, [location.pathname]);
+
   // 监听 refreshKey 变化，当组件重新挂载后清除 loading
   useEffect(() => {
     if (refreshingKey && refreshKey) {
@@ -123,9 +150,10 @@ const AppContent: React.FC = () => {
     return undefined;
   }, [refreshKey, refreshingKey, setRefreshingKey]);
 
-  // 判断当前页面是否正在刷新
+  // 判断当前页面是否正在刷新或加载
   const currentPath = location.pathname || "/";
   const isRefreshing = refreshingKey !== null && refreshingKey === currentPath;
+  const isLoading = isRefreshing || isPageLoading;
 
   return (
     <Layout className="asp-comprehension-home" style={{ height: "100vh", overflow: "hidden" }}>
@@ -203,9 +231,9 @@ const AppContent: React.FC = () => {
           <div className="asp-comprehension-home-content-wrapper">
             <Spin
               size="large"
-              spinning={isRefreshing}
+              spinning={isLoading}
               style={{ minHeight: "100%" }}
-              tip="页面刷新中..."
+              tip={isRefreshing ? "页面刷新中..." : "页面加载中..."}
             >
               <div style={{ minHeight: "100%" }}>
                 <Outlet key={`${location.pathname}-${refreshKey}`} />
