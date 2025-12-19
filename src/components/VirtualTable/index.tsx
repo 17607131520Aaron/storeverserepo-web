@@ -1,7 +1,10 @@
-import React, { useMemo, type ReactElement, type ReactNode } from "react";
+import React, { useMemo } from "react";
+import type { ReactElement, ReactNode } from "react";
 
-import { AutoSizer, List, type IListRowProps } from "react-virtualized";
-import "antd/dist/reset.css";
+import { AutoSizer, List } from "react-virtualized";
+
+import type { IListRowProps } from "react-virtualized";
+
 import "./index.scss";
 
 export interface IVirtualColumn<RecordType> {

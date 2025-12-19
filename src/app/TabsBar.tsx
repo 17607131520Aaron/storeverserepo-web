@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
+
 import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
+
 import { useTabs } from "./TabsContext";
 import "./TabsBar.scss";
 
@@ -68,7 +70,7 @@ const TabsBar: React.FC = () => {
 
   return (
     <div className="asp-tabs-bar">
-      <div className="asp-tabs-bar-container" ref={tabsContainerRef}>
+      <div ref={tabsContainerRef} className="asp-tabs-bar-container">
         {tabs.map((tab) => {
           const isActive = tab.key === activeKey;
           return (
@@ -83,16 +85,16 @@ const TabsBar: React.FC = () => {
               <div className="asp-tabs-bar-item-actions">
                 <span
                   className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
-                  onClick={(e) => handleRefresh(tab, e)}
                   title="刷新页面"
+                  onClick={(e) => handleRefresh(tab, e)}
                 >
                   <ReloadOutlined />
                 </span>
                 {tab.closable && (
                   <span
                     className="asp-tabs-bar-item-close"
-                    onClick={(e) => handleClose(tab, e)}
                     title="关闭标签"
+                    onClick={(e) => handleClose(tab, e)}
                   >
                     <CloseOutlined />
                   </span>
@@ -106,8 +108,8 @@ const TabsBar: React.FC = () => {
         <div className="asp-tabs-bar-actions">
           <span
             className="asp-tabs-bar-action-item"
-            onClick={closeAllTabs}
             title="关闭所有标签"
+            onClick={closeAllTabs}
           >
             关闭全部
           </span>

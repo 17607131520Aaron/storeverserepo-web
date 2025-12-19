@@ -11,8 +11,9 @@ import ErrorReportingProvider from "@/components/ErrorReportingProvider";
 import LoadingFallback from "@/components/LoadingFallback";
 import PerformanceMonitorWrapper from "@/components/PerformanceMonitorWrapper";
 
-import "./main.scss";
 import routers from "./router";
+import "./main.scss";
+import "antd/dist/reset.css";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);

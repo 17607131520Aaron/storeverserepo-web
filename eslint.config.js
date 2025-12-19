@@ -129,7 +129,15 @@ export default [
         },
       ],
       "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
-      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
+      // 强制类型导入单独一行，禁止混合导入
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          disallowTypeAnnotations: false,
+          fixStyle: "separate-type-imports", // 强制使用单独的 type import
+        },
+      ],
       "@typescript-eslint/consistent-type-assertions": [
         "error",
         {
@@ -213,7 +221,8 @@ export default [
       "no-debugger": "warn",
       "prefer-const": "error",
       "no-var": "error",
-      "no-duplicate-imports": "error",
+      // 禁用 no-duplicate-imports，使用 import/no-duplicates 代替（支持类型导入分离）
+      "no-duplicate-imports": "off",
       curly: ["error", "all"],
       eqeqeq: ["error", "always"],
       "no-multiple-empty-lines": ["error", { max: 1 }],
@@ -230,8 +239,8 @@ export default [
         "error",
         {
           // 导入顺序：
-          // 1. Node/浏览器内置模块（builtin）
-          // 2. 第三方依赖（external），其中 react 始终在最顶部
+          // 1. react 库（第一行，单独分组）
+          // 2. 其他第三方依赖（external）
           // 3. 项目内部别名（internal，如 @/**）
           // 4. 当前项目内的相对路径（parent/sibling）
           // 5. 样式文件（css/scss/less）始终在最后
@@ -247,28 +256,31 @@ export default [
           ],
           pathGroups: [
             {
+              // react 单独分组，始终在第一行
               pattern: "react",
               group: "external",
               position: "before",
             },
             {
+              // react 相关的其他库紧随其后
               pattern: "{react-dom,react-router-dom}",
               group: "external",
               position: "before",
             },
             {
+              // 项目内部别名（@/**）在第三方库之后
               pattern: "@/**",
               group: "internal",
               position: "after",
             },
             {
-              // 相对路径的类型导入应该在外部依赖的类型导入之前
+              // 相对路径文件在项目别名之后
               pattern: "./**",
-              group: "type",
-              position: "before",
+              group: "sibling",
+              position: "after",
             },
             {
-              // 样式始终放在最后
+              // 样式文件始终放在最后
               pattern: "**/*.{css,scss,less}",
               group: "index",
               position: "after",
@@ -285,6 +297,8 @@ export default [
           warnOnUnassignedImports: false,
         },
       ],
+      // 禁止混合导入（值导入和类型导入不能在同一行），强制类型导入单独一行
+      "import/no-duplicates": ["error", { "prefer-inline": false }],
 
       // ========= 复杂度 & 风格（不和 Prettier 冲突）=========
       "max-lines": ["error", { max: 500 }],
