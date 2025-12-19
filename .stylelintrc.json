@@ -72,8 +72,18 @@
     "selector-id-pattern": "^[a-z][a-zA-Z0-9-_]+$",
     "keyframes-name-pattern": null,
     "selector-no-vendor-prefix": true,
-    "selector-pseudo-class-no-unknown": true,
-    "selector-pseudo-element-no-unknown": true,
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["input-placeholder"]
+      }
+    ],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": ["input-placeholder"]
+      }
+    ],
 
     "alpha-value-notation": "number",
     "shorthand-property-no-redundant-values": true,
