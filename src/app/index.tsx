@@ -9,7 +9,7 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Input, Layout, Menu, Popover, Space, Spin, Typography } from "antd";
+import { Avatar, Dropdown, Input, Layout, List, Menu, Space, Spin, Typography } from "antd";
 
 import useAuth from "@/hooks/useAuth";
 import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
@@ -26,7 +26,6 @@ const { Text } = Typography;
 const AppContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [searchPopoverOpen, setSearchPopoverOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { refreshKey, refreshingKey, setRefreshingKey, isTabSwitching } = useTabs();
@@ -89,7 +88,71 @@ const AppContent: React.FC = () => {
     return getKeysToOpen(path);
   });
 
-  // 过滤菜单项
+  // 扁平化菜单项，用于搜索结果展示
+  interface IFlatMenuItem {
+    key: string;
+    label: string;
+    parentLabel?: string;
+    icon?: React.ReactNode;
+  }
+
+  const flattenMenuItems = (items: typeof menuItems, searchText: string): IFlatMenuItem[] => {
+    const result: IFlatMenuItem[] = [];
+    const searchLower = searchText.toLowerCase();
+
+    items?.forEach((item) => {
+      if (!item || typeof item === "string" || item.type === "divider") {
+        return;
+      }
+
+      const label = "label" in item && item.label ? item.label.toString() : "";
+      const labelLower = label.toLowerCase();
+
+      // 如果是一级菜单，检查自身和子菜单
+      if ("children" in item && item.children) {
+        // 检查子菜单
+        item.children.forEach((child) => {
+          if (!child || typeof child === "string" || child.type === "divider") {
+            return;
+          }
+          const childLabel = "label" in child && child.label ? child.label.toString() : "";
+          const childLabelLower = childLabel.toLowerCase();
+
+          // 如果子菜单匹配
+          if (childLabelLower.includes(searchLower)) {
+            result.push({
+              key: child.key as string,
+              label: childLabel,
+              parentLabel: label,
+              icon: "icon" in child ? child.icon : undefined,
+            });
+          }
+        });
+
+        // 如果父菜单本身也匹配，且父菜单有实际路径（可点击），才添加到结果中
+        if (labelLower.includes(searchLower) && item.key && typeof item.key === "string" && item.key.startsWith("/")) {
+          result.push({
+            key: item.key as string,
+            label,
+            icon: "icon" in item ? item.icon : undefined,
+          });
+        }
+      } else {
+        // 没有子菜单的项，直接检查标题
+        if (labelLower.includes(searchLower)) {
+          result.push({
+            key: item.key as string,
+            label,
+            icon: "icon" in item ? item.icon : undefined,
+          });
+        }
+      }
+    });
+
+    return result;
+  };
+
+  // 过滤菜单项（用于树形菜单）
   const filterMenuItems = (items: typeof menuItems, searchText: string): typeof menuItems => {
     if (!searchText.trim()) {
       return items;
@@ -133,7 +196,16 @@ const AppContent: React.FC = () => {
     return filtered;
   };
 
-  // 根据搜索值过滤菜单
+  // 根据搜索值生成扁平化搜索结果
+  const flatSearchResults = useMemo(() => {
+    if (!searchValue.trim()) {
+      return [];
+    }
+    return flattenMenuItems(menuItems, searchValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValue]);
+
+  // 根据搜索值过滤菜单（用于树形菜单）
   const filteredMenuItems = useMemo(() => {
     return filterMenuItems(menuItems, searchValue);
   }, [searchValue]);
@@ -277,43 +349,60 @@ const AppContent: React.FC = () => {
           </div>
         ) : (
           <div className="asp-comprehension-home-menu-search-collapsed">
-            <Popover
-              content={
-                <Input
-                  allowClear
-                  autoFocus
-                  placeholder="搜索菜单"
-                  prefix={<SearchOutlined />}
-                  style={{ width: 240 }}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                />
-              }
-              open={searchPopoverOpen}
-              placement="rightTop"
-              title="搜索菜单"
-              trigger="click"
-              onOpenChange={setSearchPopoverOpen}
+            <div
+              className="asp-comprehension-home-menu-search-icon"
+              onClick={() => {
+                setCollapsed(false);
+              }}
             >
-              <div className="asp-comprehension-home-menu-search-icon">
-                <SearchOutlined />
-              </div>
-            </Popover>
+              <SearchOutlined />
+            </div>
           </div>
         )}
 
         <div className="asp-comprehension-home-menu-divider" />
 
-        <Menu
-          className="asp-comprehension-home-menu-content"
-          items={filteredMenuItems}
-          mode="inline"
-          openKeys={openKeys}
-          selectedKeys={selectedKeys}
-          theme="light"
-          onClick={handleMenuClick}
-          onOpenChange={handleOpenChange}
-        />
+        {searchValue.trim() && !collapsed ? (
+          <div className="asp-comprehension-home-menu-search-results">
+            <div className="asp-comprehension-home-menu-search-results-count">
+              共搜索到 {flatSearchResults.length} 项与"{searchValue}"相关的菜单
+            </div>
+            <List
+              className="asp-comprehension-home-menu-search-results-list"
+              dataSource={flatSearchResults}
+              renderItem={(item) => (
+                <List.Item
+                  className={`asp-comprehension-home-menu-search-result-item ${
+                    selectedKeys.includes(item.key) ? "asp-comprehension-home-menu-search-result-item-selected" : ""
+                  }`}
+                  onClick={() => {
+                    if (item.key.startsWith("/")) {
+                      navigate(item.key);
+                    }
+                  }}
+                >
+                  <div className="asp-comprehension-home-menu-search-result-content">
+                    {item.icon && <span className="asp-comprehension-home-menu-search-result-icon">{item.icon}</span>}
+                    <span className="asp-comprehension-home-menu-search-result-label">
+                      {item.parentLabel ? `${item.parentLabel} / ${item.label}` : item.label}
+                    </span>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </div>
+        ) : (
+          <Menu
+            className="asp-comprehension-home-menu-content"
+            items={filteredMenuItems}
+            mode="inline"
+            openKeys={openKeys}
+            selectedKeys={selectedKeys}
+            theme="light"
+            onClick={handleMenuClick}
+            onOpenChange={handleOpenChange}
+          />
+        )}
       </Sider>
 
       <Layout style={{ height: "100%", overflow: "hidden" }}>
