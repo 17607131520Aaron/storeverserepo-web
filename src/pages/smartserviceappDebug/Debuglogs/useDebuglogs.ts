@@ -219,8 +219,16 @@ export const useDebuglogs = (): {
     }
 
     if (isConnected) {
+      // 重连：先断开，然后重新连接
       setShouldConnect(false);
       disconnect();
+      // 等待断开完成后再重新连接
+      setTimeout(() => {
+        setShouldConnect(true);
+        setTimeout(() => {
+          connect();
+        }, 0);
+      }, 100);
     } else {
       setShouldConnect(true);
       // URL 更新后需要手动调用 connect（因为 autoConnect: false）
