@@ -8,6 +8,14 @@ export default defineConfig(({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), "");
 
+  // Lightning CSS 目标浏览器版本
+  const lightningCssTargets: Record<string, number> = {
+    chrome: 90,
+    firefox: 88,
+    safari: 14,
+    edge: 90,
+  };
+
   return {
     plugins: [react()],
     server: {
@@ -74,19 +82,9 @@ export default defineConfig(({ mode }) => {
       postcss: "./postcss.config.js",
       // Lightning CSS 配置（用于 CSS 压缩和转换）
       lightningcss: {
-        // 目标浏览器版本（可选，根据需要调整）
-        targets: {
-          chrome: 90,
-          firefox: 88,
-          safari: 14,
-          edge: 90,
-        },
-        // 是否包含 draft 阶段的 CSS 特性（默认 false）
-        drafts: {
-          // nesting: true, // 启用嵌套语法（如果使用）
-        },
-        // 错误处理：'throw' | 'warn'
-        errorRecovery: "warn",
+        targets: lightningCssTargets,
+        // 错误处理：true 表示跳过无效 CSS 规则并发出警告，false 表示构建失败
+        errorRecovery: true,
       },
       // CSS 模块配置
       modules: {
