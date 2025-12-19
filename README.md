@@ -121,13 +121,13 @@ StoreVerse Web 是一个功能完善的企业级管理系统，提供了文档�
 
 #### 开发环境
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
+- **Node.js** >= 18.0.0
+- **pnpm** >= 8.0.0
 
-#### Docker 部署
+#### Docker 部署（可选）
 
-- Docker >= 20.0.0
-- Docker Compose >= 2.0.0（可选，用于使用 docker-compose 命令）
+- **Docker** >= 20.0.0
+- **Docker Compose** >= 2.0.0
 
 ### 安装依赖
 
@@ -247,12 +247,13 @@ storeverserepo-web/
 │   └── main.scss          # 全局样式
 ├── .env.development      # 开发环境变量
 ├── .env.production       # 生产环境变量
+├── .env.test             # 测试环境变量（可选）
 ├── Dockerfile            # Docker 镜像构建文件
 ├── docker-compose.yml    # Docker Compose 配置文件（多环境）
 ├── nginx.conf            # Nginx 配置文件
 ├── DOCKER.md             # Docker 部署文档
 ├── .dockerignore         # Docker 忽略文件
-├── .eslintrc.js          # ESLint 配置（实际为 eslint.config.js）
+├── eslint.config.js     # ESLint 配置
 ├── .prettierrc           # Prettier 配置
 ├── .stylelintrc.json     # Stylelint 配置
 ├── .lintstagedrc.js      # Lint-staged 配置
@@ -265,43 +266,6 @@ storeverserepo-web/
 
 ---
 
-## 📚 文档
-
-项目提供了完整的开发文档，包括：
-
-### 公共组件
-
-- [ErrorBoundary](./docs/components/ErrorBoundary.md) - 错误边界组件
-- [ErrorReportingProvider](./docs/components/ErrorReportingProvider.md) - 错误上报提供者
-- [LoadingFallback](./docs/components/LoadingFallback.md) - 加载占位组件
-- [PerformanceMonitorWrapper](./docs/components/PerformanceMonitorWrapper.md) - 性能监控包装器
-- [VirtualTable](./docs/components/VirtualTable.md) - 虚拟滚动表格组件
-
-### Hooks
-
-- [useAuth](./docs/hooks/useAuth.md) - 认证管理 Hook
-- [usePerformanceMonitor](./docs/hooks/usePerformanceMonitor.md) - 性能监控 Hook
-- [useTableRequest](./docs/hooks/useTableRequest.md) - 表格请求 Hook（解决竞态问题）
-- [useSocket](./docs/hooks/useSocket.md) - WebSocket 连接 Hook
-- [useTabs](./docs/hooks/useTabs.md) - 标签页管理 Hook
-
-### 工具方法
-
-- [request](./docs/utils/request.md) - HTTP 请求工具
-- [indexedDBStorage](./docs/utils/indexedDBStorage.md) - IndexedDB 存储工具
-- [StorageValue](./docs/utils/StorageValue.md) - 本地存储工具
-- [errorReporter](./docs/utils/errorReporter.md) - 错误上报工具
-
-### 类型定义
-
-- [baseRequest](./docs/types/baseRequest.md) - 请求相关类型
-- [react-barcode](./docs/types/react-barcode.md) - 条码组件类型
-- [react-virtualized](./docs/types/react-virtualized.md) - 虚拟滚动类型
-
-**完整文档索引**: [查看文档目录](./docs/README.md)
-
----
-
 ## 🔧 环境变量
 
 项目支持多环境配置，通过 `.env.{mode}` 文件管理不同环境的变量：
@@ -310,7 +274,7 @@ storeverserepo-web/
 
 - `.env.development` - 开发环境配置
 - `.env.production` - 生产环境配置
-- `.env.test` - 测试环境配置（如果存在）
+- `.env.test` - 测试环境配置（可选）
 
 ### 常用环境变量
 
@@ -388,7 +352,7 @@ import { util } from "@/utils/util";
 
 ### 性能优化
 
-- **虚拟滚动**: 使用 `react-virtualized` 支持大量数据渲染
+- **虚拟滚动**: 使用 `react-virtualized` 支持大量数据渲染（可渲染 10万+ 数据）
 - **请求竞态处理**: `useTableRequest` Hook 解决快速请求的竞态问题
 - **性能监控**: 自动收集和上报页面性能指标
 
@@ -434,6 +398,16 @@ import { util } from "@/utils/util";
 ---
 
 ## 🚀 部署
+
+项目支持多种部署方式，可根据实际需求选择：
+
+### 部署方式对比
+
+| 部署方式         | 适用场景                   | 端口配置                              | 文档                     |
+| ---------------- | -------------------------- | ------------------------------------- | ------------------------ |
+| **Docker**       | 容器化部署，推荐生产环境   | dev: 8080<br>test: 8081<br>prod: 80   | [DOCKER.md](./DOCKER.md) |
+| **Jenkins**      | 传统服务器部署，CI/CD 集成 | dev: 3000<br>test: 3001<br>prod: 3002 | 见下方                   |
+| **GitHub Pages** | 静态站点托管               | -                                     | 见下方                   |
 
 ### Docker 部署（推荐）
 
@@ -500,11 +474,30 @@ import { util } from "@/utils/util";
 #### 特性
 
 - ✅ **多环境支持**: dev、test、prod 三个环境
+- ✅ **跨平台支持**: 自动适配 macOS 和 Linux 环境
 - ✅ **自动备份**: 部署前自动备份当前版本到 `./deploy-backup/` 目录
 - ✅ **Jenkins 检查**: 构建前自动检查 Jenkins 服务状态
 - ✅ **Nginx 集成**: 自动重新加载 Nginx 配置（可选）
+- ✅ **Nginx 配置建议**: 在 macOS 上提供详细的 Nginx 配置示例
 - ✅ **回滚支持**: 支持一键回滚到上一个版本
 - ✅ **权限管理**: 自动设置正确的文件权限
+- ✅ **生产环境路径处理**: 自动处理 GitHub Pages 部署路径（`/storeverserepo-web/`）
+
+#### 默认部署目录和端口
+
+**Linux 环境：**
+
+- **dev**: `/usr/share/nginx/html-dev` (端口: 3000)
+- **test**: `/usr/share/nginx/html-test` (端口: 3001)
+- **prod**: `/usr/share/nginx/html` (端口: 3002)
+
+**macOS 环境（本地部署）：**
+
+- **dev**: `./deploy/dev` (端口: 3000)
+- **test**: `./deploy/test` (端口: 3001)
+- **prod**: `./deploy/prod` (端口: 3002)
+
+> 💡 **提示**: 在 macOS 上，脚本会自动检测并使用本地部署目录，避免需要 sudo 权限。部署完成后，需要配置 Nginx 来服务这些目录，脚本会提供详细的配置建议。
 
 #### 环境变量配置
 
@@ -526,12 +519,6 @@ REQUIRE_JENKINS=true ./scripts/jenkins-deploy.sh prod
 # 跳过 Jenkins 检查
 SKIP_JENKINS_CHECK=true ./scripts/jenkins-deploy.sh prod
 ```
-
-#### 默认部署目录
-
-- **dev**: `/usr/share/nginx/html-dev`
-- **test**: `/usr/share/nginx/html-test`
-- **prod**: `/usr/share/nginx/html`
 
 #### 在 Jenkins Pipeline 中使用
 
@@ -563,6 +550,43 @@ pnpm build:prod
 
 # 将 dist 目录部署到你的服务器
 ```
+
+---
+
+## 📚 文档
+
+项目提供了完整的开发文档，包括：
+
+### 公共组件
+
+- [ErrorBoundary](./docs/components/ErrorBoundary.md) - 错误边界组件
+- [ErrorReportingProvider](./docs/components/ErrorReportingProvider.md) - 错误上报提供者
+- [LoadingFallback](./docs/components/LoadingFallback.md) - 加载占位组件
+- [PerformanceMonitorWrapper](./docs/components/PerformanceMonitorWrapper.md) - 性能监控包装器
+- [VirtualTable](./docs/components/VirtualTable.md) - 虚拟滚动表格组件
+
+### Hooks
+
+- [useAuth](./docs/hooks/useAuth.md) - 认证管理 Hook
+- [usePerformanceMonitor](./docs/hooks/usePerformanceMonitor.md) - 性能监控 Hook
+- [useTableRequest](./docs/hooks/useTableRequest.md) - 表格请求 Hook（解决竞态问题）
+- [useSocket](./docs/hooks/useSocket.md) - WebSocket 连接 Hook
+- [useTabs](./docs/hooks/useTabs.md) - 标签页管理 Hook
+
+### 工具方法
+
+- [request](./docs/utils/request.md) - HTTP 请求工具
+- [indexedDBStorage](./docs/utils/indexedDBStorage.md) - IndexedDB 存储工具
+- [StorageValue](./docs/utils/StorageValue.md) - 本地存储工具
+- [errorReporter](./docs/utils/errorReporter.md) - 错误上报工具
+
+### 类型定义
+
+- [baseRequest](./docs/types/baseRequest.md) - 请求相关类型
+- [react-barcode](./docs/types/react-barcode.md) - 条码组件类型
+- [react-virtualized](./docs/types/react-virtualized.md) - 虚拟滚动类型
+
+**完整文档索引**: [查看文档目录](./docs/README.md)
 
 ---
 
