@@ -12,13 +12,28 @@ interface IPerformanceData {
   cls: number;
 }
 
+export interface IPagePerformanceReport extends IPerformanceData {
+  url: string;
+  timestamp: number;
+  pageId?: string;
+}
+
+type PagePerformanceReporter = (payload: IPagePerformanceReport) => void | Promise<void>;
+
+let pagePerformanceReporter: PagePerformanceReporter | null = null;
+let hasReportedOnce = false;
+
+export const setPagePerformanceReporter = (reporter: PagePerformanceReporter): void => {
+  pagePerformanceReporter = reporter;
+};
+
 /**
  * Hook: 获取页面性能指标
  * 使用Performance API获取页面加载性能数据
  */
 export const usePerformanceMonitor = (): {
   getPerformanceMetrics: () => IPerformanceData | null;
-  logPagePerformance: () => void;
+  logPagePerformance: (pageId?: string) => void;
 } => {
   const getPerformanceMetrics = (): IPerformanceData | null => {
     if (typeof window === "undefined" || !window.performance) {
@@ -75,7 +90,7 @@ export const usePerformanceMonitor = (): {
     return metrics;
   };
 
-  const logPagePerformance = (): void => {
+  const logPagePerformance = (pageId?: string): void => {
     const metrics = getPerformanceMetrics();
     if (!metrics) {
       console.warn("无法获取性能指标");
@@ -113,6 +128,23 @@ export const usePerformanceMonitor = (): {
         `${metrics.lcp.toFixed(2)}ms`,
         metrics.lcp < 2500 ? "✅" : "⚠️",
       );
+    }
+
+    // 首次渲染性能上报（只上报一次，预留接入真实埋点）
+    if (!hasReportedOnce && pagePerformanceReporter) {
+      hasReportedOnce = true;
+      const payload: IPagePerformanceReport = {
+        ...metrics,
+        url: typeof window !== "undefined" && window.location ? window.location.href : "",
+        timestamp: Date.now(),
+        pageId,
+      };
+
+      try {
+        void pagePerformanceReporter(payload);
+      } catch (error) {
+        console.warn("页面性能指标上报失败（已忽略）：", error);
+      }
     }
   };
 

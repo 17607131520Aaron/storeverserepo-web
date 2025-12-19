@@ -116,7 +116,7 @@ const PerformanceMonitor: React.FC<IPerformanceMonitorProps> = ({
       // 在标签下追加一次“页面性能指标”（DNS/TCP/FCP 等），保证每个页面只调用一次
       if (!hasLoggedPagePerfRef.current) {
         hasLoggedPagePerfRef.current = true;
-        logPagePerformance();
+        logPagePerformance(id);
       }
 
       hasLoggedRef.current = true;
