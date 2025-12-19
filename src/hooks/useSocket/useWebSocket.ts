@@ -11,7 +11,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConnectionState, IUseWebSocketOptions, IUseWebSocketReturn } from "./type";
 import { setupWebSocketHandlers } from "./utils";
 
-// eslint-disable-next-line max-lines-per-function
 export const useWebSocket = (options: IUseWebSocketOptions): IUseWebSocketReturn => {
   const {
     url: urlOption,

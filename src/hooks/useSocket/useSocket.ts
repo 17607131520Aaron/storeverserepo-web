@@ -14,7 +14,6 @@ import {
 import type { ConnectionState, IEmitResult, IUseSocketOptions, IUseSocketReturn } from "./type";
 import { socketCache } from "./utils";
 
-// eslint-disable-next-line max-lines-per-function
 export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   const { url, autoConnect = true, ...socketOptions } = options;
 

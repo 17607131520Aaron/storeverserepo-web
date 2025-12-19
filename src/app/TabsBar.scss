@@ -187,3 +187,34 @@
     }
   }
 }
+
+// ========= 响应式适配 =========
+// 手机端：Tabs 更紧凑，允许横向滚动
+@media (max-width: 768px) {
+  .asp-tabs-bar {
+    height: 36px;
+
+    &-container {
+      padding: 0 4px;
+    }
+
+    &-item {
+      padding: 0 6px 0 8px;
+      font-size: 12px;
+      max-width: 140px;
+
+      &-label {
+        max-width: 90px;
+      }
+    }
+
+    &-actions {
+      padding: 0 4px;
+    }
+
+    &-action-item {
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+  }
+}
