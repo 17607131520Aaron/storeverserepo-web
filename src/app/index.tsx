@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshKey, refreshingKey, setRefreshingKey } = useTabs();
+  const { refreshKey, refreshingKey, setRefreshingKey, isTabSwitching } = useTabs();
   const [isPageLoading, setIsPageLoading] = useState(false);
   const prevPathRef = useRef<string | null>(null);
 
@@ -115,8 +115,12 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const currentPath = location.pathname || "/";
 
-    // 如果路径变化（且不是初次加载），显示 loading
-    if (prevPathRef.current !== null && prevPathRef.current !== currentPath) {
+    // 如果路径变化（且不是初次加载，且不是标签切换），显示 loading
+    if (
+      prevPathRef.current !== null &&
+      prevPathRef.current !== currentPath &&
+      !isTabSwitching
+    ) {
       setIsPageLoading(true);
 
       // 延迟清除 loading，确保组件已经加载完成
@@ -130,11 +134,11 @@ const AppContent: React.FC = () => {
         clearTimeout(timer);
       };
     } else {
-      // 初次加载或路径未变化，更新 ref 但不显示 loading
+      // 初次加载、路径未变化或标签切换，更新 ref 但不显示 loading
       prevPathRef.current = currentPath;
     }
     return undefined;
-  }, [location.pathname]);
+  }, [location.pathname, isTabSwitching]);
 
   // 监听 refreshKey 变化，当组件重新挂载后清除 loading
   useEffect(() => {

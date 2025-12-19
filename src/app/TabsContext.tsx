@@ -18,6 +18,7 @@ interface ITabsContextType {
   activeKey: string;
   refreshKey: string;
   refreshingKey: string | null;
+  isTabSwitching: boolean;
   addTab: (path: string) => void;
   removeTab: (key: string) => void;
   setActiveTab: (key: string) => void;
@@ -25,6 +26,7 @@ interface ITabsContextType {
   closeAllTabs: () => void;
   refreshTab: (key: string) => void;
   setRefreshingKey: (key: string | null) => void;
+  setIsTabSwitching: (value: boolean) => void;
 }
 
 const TabsContext = createContext<ITabsContextType | undefined>(undefined);
@@ -70,6 +72,7 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeKey, setActiveKey] = useState<string>("/");
   const [refreshKey, setRefreshKey] = useState<string>("");
   const [refreshingKey, setRefreshingKey] = useState<string | null>(null);
+  const [isTabSwitching, setIsTabSwitching] = useState<boolean>(false);
 
   // 添加标签
   const addTab = useCallback((path: string) => {
@@ -122,7 +125,13 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveKey(key);
       const tab = tabs.find((t) => t.key === key);
       if (tab) {
+        // 标记为标签切换，避免触发页面重新加载
+        setIsTabSwitching(true);
         navigate(tab.path);
+        // 延迟清除标志，确保路由变化完成
+        setTimeout(() => {
+          setIsTabSwitching(false);
+        }, 100);
       }
     },
     [tabs, navigate],
@@ -200,6 +209,7 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeKey,
         refreshKey,
         refreshingKey,
+        isTabSwitching,
         addTab,
         removeTab,
         setActiveTab,
@@ -207,6 +217,7 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeAllTabs,
         refreshTab,
         setRefreshingKey,
+        setIsTabSwitching,
       }}
     >
       {children}

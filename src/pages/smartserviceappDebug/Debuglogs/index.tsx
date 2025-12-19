@@ -15,8 +15,8 @@ import {
 } from "antd";
 
 import { DEFAULT_PORT, getLogLevelColor, levelOptions } from "./constants";
-import "./index.scss";
 import { useDebuglogs, type ConnectionMode } from "./useDebuglogs";
+import "./index.scss";
 
 const { Text } = Typography;
 const { Search } = Input;
