@@ -26,7 +26,14 @@ PROJECT_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || ech
 
 # 默认值
 ENV=${1:-prod}
-ACTION=${2:-build}
+# 如果只传了一个参数（环境），则执行构建+部署；如果传了两个参数，则执行指定操作
+if [ -z "$2" ]; then
+    # 简化用法：只传环境参数，自动执行构建和部署
+    ACTION="build_and_deploy"
+else
+    # 完整用法：传了操作参数，执行指定操作
+    ACTION=$2
+fi
 
 # 验证环境参数
 if [[ ! "$ENV" =~ ^(dev|test|prod)$ ]]; then
@@ -45,7 +52,7 @@ if [[ ! "$ENV" =~ ^(dev|test|prod)$ ]]; then
 fi
 
 # 验证操作参数
-if [[ ! "$ACTION" =~ ^(build|deploy|backup|rollback)$ ]]; then
+if [[ ! "$ACTION" =~ ^(build|deploy|backup|rollback|build_and_deploy)$ ]]; then
     echo -e "${RED}错误: 无效的操作参数 '$ACTION'${NC}"
     echo ""
     echo -e "${YELLOW}使用方法:${NC}"
@@ -61,29 +68,58 @@ if [[ ! "$ACTION" =~ ^(build|deploy|backup|rollback)$ ]]; then
 fi
 
 # 根据环境选择对应的配置
-case $ENV in
-    dev)
-        BUILD_MODE="development"
-        BUILD_CMD="pnpm build:dev"
-        DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-dev}"
-        BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
-        APP_URL="${APP_URL:-http://localhost:8080}"
-        ;;
-    test)
-        BUILD_MODE="test"
-        BUILD_CMD="pnpm build:test"
-        DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-test}"
-        BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
-        APP_URL="${APP_URL:-http://localhost:8081}"
-        ;;
-    prod)
-        BUILD_MODE="production"
-        BUILD_CMD="pnpm build:prod"
-        DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html}"
-        BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
-        APP_URL="${APP_URL:-http://localhost}"
-        ;;
-esac
+# 检测操作系统，在 macOS 上使用本地部署目录，避免需要 sudo 权限
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS: 使用项目本地部署目录
+    case $ENV in
+        dev)
+            BUILD_MODE="development"
+            BUILD_CMD="pnpm build:dev"
+            DEPLOY_DIR="${DEPLOY_DIR:-./deploy/dev}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
+            APP_URL="${APP_URL:-http://localhost:8080}"
+            ;;
+        test)
+            BUILD_MODE="test"
+            BUILD_CMD="pnpm build:test"
+            DEPLOY_DIR="${DEPLOY_DIR:-./deploy/test}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
+            APP_URL="${APP_URL:-http://localhost:8081}"
+            ;;
+        prod)
+            BUILD_MODE="production"
+            BUILD_CMD="pnpm build:prod"
+            DEPLOY_DIR="${DEPLOY_DIR:-./deploy/prod}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
+            APP_URL="${APP_URL:-http://localhost}"
+            ;;
+    esac
+else
+    # Linux: 使用系统 nginx 目录
+    case $ENV in
+        dev)
+            BUILD_MODE="development"
+            BUILD_CMD="pnpm build:dev"
+            DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-dev}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/dev}"
+            APP_URL="${APP_URL:-http://localhost:8080}"
+            ;;
+        test)
+            BUILD_MODE="test"
+            BUILD_CMD="pnpm build:test"
+            DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html-test}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/test}"
+            APP_URL="${APP_URL:-http://localhost:8081}"
+            ;;
+        prod)
+            BUILD_MODE="production"
+            BUILD_CMD="pnpm build:prod"
+            DEPLOY_DIR="${DEPLOY_DIR:-/usr/share/nginx/html}"
+            BACKUP_DIR="${BACKUP_DIR:-./deploy-backup/prod}"
+            APP_URL="${APP_URL:-http://localhost}"
+            ;;
+    esac
+fi
 
 # 生成时间戳（格式：YYYYMMDDHHMMSS）
 TIMESTAMP=$(date +"%Y%m%d%H%M%S")
@@ -170,42 +206,67 @@ check_jenkins_service() {
     for port in "${JENKINS_PORTS[@]}"; do
         # 检查端口是否监听
         PORT_LISTENING=false
-        if command -v netstat &> /dev/null; then
-            if netstat -tuln 2>/dev/null | grep -q ":${port} "; then
+
+        # 优先使用 lsof（macOS 和 Linux 都支持）
+        if command -v lsof &> /dev/null; then
+            if lsof -i :${port} -P -n 2>/dev/null | grep -q "LISTEN"; then
                 PORT_LISTENING=true
             fi
+        # 使用 netstat（Linux）
+        elif command -v netstat &> /dev/null; then
+            # Linux 格式: :8080 或 0.0.0.0:8080
+            # macOS 格式: 127.0.0.1.8080 或 *.8080
+            if netstat -tuln 2>/dev/null | grep -qE "[:.]${port}[[:space:]]" || \
+               netstat -an 2>/dev/null | grep -qE "[:.]${port}[[:space:]].*LISTEN"; then
+                PORT_LISTENING=true
+            fi
+        # 使用 ss（Linux）
         elif command -v ss &> /dev/null; then
             if ss -tuln 2>/dev/null | grep -q ":${port} "; then
                 PORT_LISTENING=true
             fi
         fi
 
+        # 即使端口检测失败，也尝试直接访问 HTTP 接口（因为可能监听在 127.0.0.1）
         # 检查 HTTP 接口
-        if [ "$PORT_LISTENING" = true ]; then
-            HTTP_RESPONSE=""
-            if command -v curl &> /dev/null; then
+        HTTP_RESPONSE=""
+        if command -v curl &> /dev/null; then
+            HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://127.0.0.1:${port}" 2>/dev/null || echo "")
+            # 如果 127.0.0.1 失败，尝试 localhost
+            if [ -z "$HTTP_RESPONSE" ] || [ "$HTTP_RESPONSE" = "000" ]; then
                 HTTP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 2 "http://localhost:${port}" 2>/dev/null || echo "")
-            elif command -v wget &> /dev/null; then
-                if wget -q --spider --timeout=2 "http://localhost:${port}" 2>/dev/null; then
-                    HTTP_RESPONSE="200"
-                fi
             fi
+        elif command -v wget &> /dev/null; then
+            if wget -q --spider --timeout=2 "http://127.0.0.1:${port}" 2>/dev/null || \
+               wget -q --spider --timeout=2 "http://localhost:${port}" 2>/dev/null; then
+                HTTP_RESPONSE="200"
+            fi
+        fi
 
-            # 检查是否是 Jenkins（通过响应头或内容）
-            if [ -n "$HTTP_RESPONSE" ] && echo "$HTTP_RESPONSE" | grep -q "200\|403\|401"; then
-                # 进一步验证是否是 Jenkins
-                if command -v curl &> /dev/null; then
-                    RESPONSE_BODY=$(curl -s --connect-timeout 2 "http://localhost:${port}" 2>/dev/null || echo "")
-                    if echo "$RESPONSE_BODY" | grep -qi "jenkins"; then
-                        JENKINS_PORT=$port
-                        JENKINS_URL="http://localhost:${port}"
-                        JENKINS_RUNNING=true
-                        break
-                    fi
-                else
-                    # 如果没有 curl，假设是 Jenkins
+        # 检查是否是 Jenkins（通过响应头或内容）
+        if [ -n "$HTTP_RESPONSE" ] && echo "$HTTP_RESPONSE" | grep -q "200\|403\|401"; then
+            # 进一步验证是否是 Jenkins
+            if command -v curl &> /dev/null; then
+                RESPONSE_BODY=$(curl -s --connect-timeout 2 "http://127.0.0.1:${port}" 2>/dev/null || \
+                               curl -s --connect-timeout 2 "http://localhost:${port}" 2>/dev/null || echo "")
+                # 检查响应头或内容中是否包含 Jenkins 标识
+                if echo "$RESPONSE_BODY" | grep -qi "jenkins\|Jetty"; then
                     JENKINS_PORT=$port
-                    JENKINS_URL="http://localhost:${port}"
+                    JENKINS_URL="http://127.0.0.1:${port}"
+                    JENKINS_RUNNING=true
+                    break
+                elif [ "$HTTP_RESPONSE" = "403" ] || [ "$HTTP_RESPONSE" = "401" ]; then
+                    # 403/401 通常是 Jenkins 的认证页面
+                    JENKINS_PORT=$port
+                    JENKINS_URL="http://127.0.0.1:${port}"
+                    JENKINS_RUNNING=true
+                    break
+                fi
+            else
+                # 如果没有 curl，但 HTTP 响应是 403/401，假设是 Jenkins
+                if echo "$HTTP_RESPONSE" | grep -q "403\|401"; then
+                    JENKINS_PORT=$port
+                    JENKINS_URL="http://127.0.0.1:${port}"
                     JENKINS_RUNNING=true
                     break
                 fi
@@ -452,33 +513,67 @@ deploy_to_target() {
     backup_current_deployment
 
     # 创建部署目录（如果不存在）
-    sudo mkdir -p "$DEPLOY_DIR" || mkdir -p "$DEPLOY_DIR"
+    # 在 macOS 上或本地目录时不需要 sudo
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+        mkdir -p "$DEPLOY_DIR"
+    else
+        sudo mkdir -p "$DEPLOY_DIR" || mkdir -p "$DEPLOY_DIR"
+    fi
 
     # 备份当前部署目录（如果存在且不为空）
+    TEMP_BACKUP=""
     if [ -d "$DEPLOY_DIR" ] && [ -n "$(ls -A $DEPLOY_DIR 2>/dev/null)" ]; then
         # 创建临时备份目录
         TEMP_BACKUP="${DEPLOY_DIR}.backup.${TIMESTAMP}"
         echo -e "${YELLOW}创建临时备份: ${TEMP_BACKUP}${NC}"
-        sudo mv "$DEPLOY_DIR" "$TEMP_BACKUP" 2>/dev/null || mv "$DEPLOY_DIR" "$TEMP_BACKUP" 2>/dev/null || {
-            echo -e "${RED}无法创建临时备份，部署终止${NC}"
-            exit 1
-        }
+        if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+            mv "$DEPLOY_DIR" "$TEMP_BACKUP" 2>/dev/null || {
+                echo -e "${RED}无法创建临时备份，部署终止${NC}"
+                exit 1
+            }
+        else
+            sudo mv "$DEPLOY_DIR" "$TEMP_BACKUP" 2>/dev/null || mv "$DEPLOY_DIR" "$TEMP_BACKUP" 2>/dev/null || {
+                echo -e "${RED}无法创建临时备份，部署终止${NC}"
+                exit 1
+            }
+        fi
+    fi
+
+    # 确保部署目录存在（可能在备份时被移动了）
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+        mkdir -p "$DEPLOY_DIR"
+    else
+        sudo mkdir -p "$DEPLOY_DIR" || mkdir -p "$DEPLOY_DIR"
     fi
 
     # 复制构建产物到部署目录
     echo -e "${YELLOW}复制构建产物到部署目录...${NC}"
-    sudo cp -r dist/* "$DEPLOY_DIR/" 2>/dev/null || cp -r dist/* "$DEPLOY_DIR/" || {
-        echo -e "${RED}部署失败，正在恢复备份...${NC}"
-        if [ -d "$TEMP_BACKUP" ]; then
-            sudo mv "$TEMP_BACKUP" "$DEPLOY_DIR" 2>/dev/null || mv "$TEMP_BACKUP" "$DEPLOY_DIR"
-        fi
-        exit 1
-    }
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+        cp -r dist/* "$DEPLOY_DIR/" || {
+            echo -e "${RED}部署失败，正在恢复备份...${NC}"
+            if [ -d "$TEMP_BACKUP" ]; then
+                mv "$TEMP_BACKUP" "$DEPLOY_DIR"
+            fi
+            exit 1
+        }
+    else
+        sudo cp -r dist/* "$DEPLOY_DIR/" 2>/dev/null || cp -r dist/* "$DEPLOY_DIR/" || {
+            echo -e "${RED}部署失败，正在恢复备份...${NC}"
+            if [ -d "$TEMP_BACKUP" ]; then
+                sudo mv "$TEMP_BACKUP" "$DEPLOY_DIR" 2>/dev/null || mv "$TEMP_BACKUP" "$DEPLOY_DIR"
+            fi
+            exit 1
+        }
+    fi
 
     # 设置正确的文件权限
     echo -e "${YELLOW}设置文件权限...${NC}"
-    sudo chown -R nginx:nginx "$DEPLOY_DIR" 2>/dev/null || sudo chown -R www-data:www-data "$DEPLOY_DIR" 2>/dev/null || true
-    sudo chmod -R 755 "$DEPLOY_DIR" 2>/dev/null || chmod -R 755 "$DEPLOY_DIR" || true
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+        chmod -R 755 "$DEPLOY_DIR" || true
+    else
+        sudo chown -R nginx:nginx "$DEPLOY_DIR" 2>/dev/null || sudo chown -R www-data:www-data "$DEPLOY_DIR" 2>/dev/null || true
+        sudo chmod -R 755 "$DEPLOY_DIR" 2>/dev/null || chmod -R 755 "$DEPLOY_DIR" || true
+    fi
 
     # 清理临时备份（如果部署成功）
     if [ -d "$TEMP_BACKUP" ]; then
@@ -488,6 +583,31 @@ deploy_to_target() {
 
     echo -e "${GREEN}部署完成！${NC}"
     echo -e "${BLUE}访问地址: ${APP_URL}${NC}"
+}
+
+# 启动简单的 HTTP 服务器（用于 macOS 本地测试）
+start_local_server() {
+    if [[ "$OSTYPE" == "darwin"* ]] && [[ "$DEPLOY_DIR" == ./* ]] || [[ "$DEPLOY_DIR" == ~/* ]]; then
+        # 检查是否已经有服务器在运行
+        local PORT=$(echo "$APP_URL" | sed -E 's|.*:([0-9]+).*|\1|')
+        if [ -z "$PORT" ]; then
+            PORT=8080
+        fi
+
+        if lsof -i :${PORT} -P -n 2>/dev/null | grep -q LISTEN; then
+            echo -e "${BLUE}端口 ${PORT} 已被占用，跳过启动本地服务器${NC}"
+            return 0
+        fi
+
+        echo -e "${YELLOW}提示: 在 macOS 上，可以使用以下命令启动本地服务器访问部署文件：${NC}"
+        echo -e "${GREEN}  cd ${DEPLOY_DIR} && python3 -m http.server ${PORT}${NC}"
+        echo ""
+        echo -e "${YELLOW}或者使用 Node.js:${NC}"
+        if command -v npx &> /dev/null; then
+            echo -e "${GREEN}  cd ${DEPLOY_DIR} && npx serve -p ${PORT}${NC}"
+        fi
+        echo ""
+    fi
 }
 
 # 重启 Nginx（可选）
@@ -501,10 +621,14 @@ restart_nginx() {
                 # 重新加载 nginx（不中断服务）
                 sudo nginx -s reload 2>/dev/null || nginx -s reload 2>/dev/null || {
                     echo -e "${YELLOW}警告: Nginx 重新加载失败，可能需要手动重启${NC}"
+                    # 在 macOS 上，如果 nginx 不可用，提供启动本地服务器的提示
+                    start_local_server
                 }
                 echo -e "${GREEN}Nginx 已重新加载${NC}"
             else
                 echo -e "${RED}错误: Nginx 配置检查失败${NC}"
+                # 在 macOS 上，如果 nginx 配置失败，提供启动本地服务器的提示
+                start_local_server
                 exit 1
             fi
         elif command -v systemctl &> /dev/null; then
@@ -515,9 +639,13 @@ restart_nginx() {
             echo -e "${GREEN}Nginx 已重新加载${NC}"
         else
             echo -e "${YELLOW}警告: 未找到 Nginx 命令，请手动重启 Nginx${NC}"
+            # 在 macOS 上，如果 nginx 不可用，提供启动本地服务器的提示
+            start_local_server
         fi
     else
         echo -e "${BLUE}跳过 Nginx 重启（RESTART_NGINX=false）${NC}"
+        # 即使跳过 nginx 重启，在 macOS 上也提供启动本地服务器的提示
+        start_local_server
     fi
 }
 
@@ -626,8 +754,8 @@ case $ACTION in
     rollback)
         rollback_deployment
         ;;
-    *)
-        # 默认行为：构建 + 部署
+    build_and_deploy)
+        # 简化用法：构建 + 部署
         check_requirements
         install_dependencies
         build_project
@@ -638,5 +766,15 @@ case $ACTION in
         echo -e "${GREEN}部署目录: ${DEPLOY_DIR}${NC}"
         echo -e "${GREEN}访问地址: ${APP_URL}${NC}"
         echo -e "${GREEN}========================================${NC}"
+        ;;
+    *)
+        echo -e "${RED}错误: 未知的操作 '$ACTION'${NC}"
+        echo ""
+        echo -e "${YELLOW}可用操作:${NC}"
+        echo "  build   - 构建项目"
+        echo "  deploy  - 部署到目标目录"
+        echo "  backup  - 备份当前部署版本"
+        echo "  rollback - 回滚到上一个版本"
+        exit 1
         ;;
 esac
