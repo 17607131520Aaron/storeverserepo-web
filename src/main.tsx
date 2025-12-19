@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 
-import { createRoot } from 'react-dom/client';
+import { RouterProvider } from "react-router-dom";
 
-import { ConfigProvider } from 'antd';
-import ZhCN from 'antd/locale/zh_CN';
-import { RouterProvider } from 'react-router-dom';
+import { ConfigProvider } from "antd";
+import ZhCN from "antd/locale/zh_CN";
+import { createRoot } from "react-dom/client";
 
 import "./main.scss";
 import routers from "./router";

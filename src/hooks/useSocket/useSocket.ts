@@ -6,17 +6,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { io } from "socket.io-client";
 
+import { socketCache } from "./utils";
+
 import type { SocketOptions as IOSocketOptions, ManagerOptions, Socket } from "socket.io-client";
+import type { ConnectionState, IEmitResult, IUseSocketOptions, IUseSocketReturn } from "./type";
 
-import {
-  ConnectionState,
-  EmitResult,
-  UseSocketOptions,
-  UseSocketReturn,
-  socketCache,
-} from "./constants";
-
-export function useSocket(options: UseSocketOptions): UseSocketReturn {
+// eslint-disable-next-line max-lines-per-function
+export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   const { url, autoConnect = true, ...socketOptions } = options;
 
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -35,17 +31,18 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
       socketRef.current = cached.socket;
     } else {
       // 创建新连接
-      const newSocket = io(url, {
+      const socketConfig: Partial<ManagerOptions & IOSocketOptions> = {
         autoConnect: false,
+        auth: socketOptions.auth,
+        extraHeaders: socketOptions.extraHeaders,
+        path: socketOptions.path,
+        query: socketOptions.query,
         reconnection: socketOptions.reconnection ?? true,
         reconnectionAttempts: socketOptions.reconnectionAttempts ?? 3,
         reconnectionDelay: socketOptions.reconnectionDelay ?? 1000,
         timeout: socketOptions.timeout ?? 20000,
-        path: socketOptions.path,
-        auth: socketOptions.auth,
-        query: socketOptions.query,
-        extraHeaders: socketOptions.extraHeaders,
-      } as Partial<ManagerOptions & IOSocketOptions>);
+      };
+      const newSocket = io(url, socketConfig);
 
       socketCache.set(url, { socket: newSocket, refCount: 1 });
       socketRef.current = newSocket;
@@ -56,7 +53,7 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
     const currentSocket = cached?.socket;
     if (currentSocket) {
       // 延迟设置 socket state，避免同步 setState
-      setTimeout(() => {
+      setTimeout((): void => {
         setSocket(currentSocket);
       }, 0);
     }
@@ -66,21 +63,21 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
     }
 
     // 事件处理
-    const handleConnect = () => {
+    const handleConnect = (): void => {
       setConnectionState("connected");
       setError(null);
     };
 
-    const handleDisconnect = () => {
+    const handleDisconnect = (): void => {
       setConnectionState("disconnected");
     };
 
-    const handleConnectError = (err: Error) => {
+    const handleConnectError = (err: Error): void => {
       setConnectionState("error");
       setError(err);
     };
 
-    const handleReconnectAttempt = () => {
+    const handleReconnectAttempt = (): void => {
       setConnectionState("connecting");
     };
 
@@ -92,18 +89,18 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
     // 检查当前状态或自动连接
     if (currentSocket.connected) {
       // 延迟设置状态
-      setTimeout(() => {
+      setTimeout((): void => {
         setConnectionState("connected");
       }, 0);
     } else if (autoConnect) {
-      setTimeout(() => {
+      setTimeout((): void => {
         setConnectionState("connecting");
       }, 0);
       currentSocket.connect();
     }
 
     // 清理
-    return () => {
+    return (): void => {
       currentSocket.off("connect", handleConnect);
       currentSocket.off("disconnect", handleDisconnect);
       currentSocket.off("connect_error", handleConnectError);
@@ -132,7 +129,7 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
   ]);
 
   // 手动连接
-  const connect = useCallback(() => {
+  const connect = useCallback((): void => {
     if (socketRef.current && !socketRef.current.connected) {
       setConnectionState("connecting");
       socketRef.current.connect();
@@ -140,25 +137,30 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
   }, []);
 
   // 手动断开
-  const disconnect = useCallback(() => {
+  const disconnect = useCallback((): void => {
     if (socketRef.current?.connected) {
       socketRef.current.disconnect();
     }
   }, []);
 
   // 监听事件
-  const on = useCallback(<T = unknown>(event: string, callback: (data: T) => void) => {
-    if (!socketRef.current) {
-      return () => {};
-    }
-    socketRef.current.on(event, callback as (...args: unknown[]) => void);
-    return () => {
-      socketRef.current?.off(event, callback as (...args: unknown[]) => void);
-    };
-  }, []);
+  const on = useCallback(
+    <T = unknown>(event: string, callback: (data: T) => void): (() => void) => {
+      if (!socketRef.current) {
+        return (): void => {
+          // No operation - socket not available
+        };
+      }
+      socketRef.current.on(event, callback as (...args: unknown[]) => void);
+      return (): void => {
+        socketRef.current?.off(event, callback as (...args: unknown[]) => void);
+      };
+    },
+    [],
+  );
 
   // 取消监听
-  const off = useCallback((event: string, callback?: (...args: unknown[]) => void) => {
+  const off = useCallback((event: string, callback?: (...args: unknown[]) => void): void => {
     if (!socketRef.current) {
       return;
     }
@@ -170,7 +172,7 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
   }, []);
 
   // 发送消息
-  const emit = useCallback((event: string, data?: unknown) => {
+  const emit = useCallback((event: string, data?: unknown): void => {
     if (!socketRef.current?.connected) {
       console.warn(`[useSocket] Cannot emit "${event}": Socket not connected`);
       return;
@@ -179,26 +181,27 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
   }, []);
 
   // 发送消息（带确认）
-  const emitWithAck = useCallback(
-    <T = unknown>(event: string, data?: unknown, timeout = 5000): Promise<EmitResult<T>> => {
-      return new Promise((resolve) => {
-        if (!socketRef.current?.connected) {
-          resolve({ success: false, error: "Socket not connected" });
-          return;
-        }
+  const emitWithAck = <T = unknown>(
+    event: string,
+    data?: unknown,
+    timeout = 5000,
+  ): Promise<IEmitResult<T>> => {
+    return new Promise((resolve) => {
+      if (!socketRef.current?.connected) {
+        resolve({ error: "Socket not connected", success: false });
+        return;
+      }
 
-        const timeoutId = setTimeout(() => {
-          resolve({ success: false, error: `Timeout after ${timeout}ms` });
-        }, timeout);
+      const timeoutId = setTimeout(() => {
+        resolve({ error: `Timeout after ${timeout}ms`, success: false });
+      }, timeout);
 
-        socketRef.current.emit(event, data, (response: T) => {
-          clearTimeout(timeoutId);
-          resolve({ success: true, data: response });
-        });
+      socketRef.current.emit(event, data, (response: T) => {
+        clearTimeout(timeoutId);
+        resolve({ data: response, success: true });
       });
-    },
-    [],
-  );
+    });
+  };
 
   return {
     socket,
@@ -213,4 +216,4 @@ export function useSocket(options: UseSocketOptions): UseSocketReturn {
     emit,
     emitWithAck,
   };
-}
+};

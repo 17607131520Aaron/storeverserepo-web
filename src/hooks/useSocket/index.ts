@@ -1,6 +1,22 @@
-import type { UseSocketOptions, UseSocketReturn, UseSSEOptions, UseSSEReturn } from "./constants";
 import { useSocket } from "./useSocket";
 import { useSSE } from "./useSSE";
+import { useWebSocket } from "./useWebSocket";
 
-export { useSocket, useSSE };
-export type { UseSocketOptions, UseSocketReturn, UseSSEOptions, UseSSEReturn };
+import type {
+  IUseSocketOptions,
+  IUseSocketReturn,
+  IUseSSEOptions,
+  IUseSSEReturn,
+  IUseWebSocketOptions,
+  IUseWebSocketReturn,
+} from "./type";
+
+export { useSocket, useSSE, useWebSocket };
+export type {
+  IUseSocketOptions,
+  IUseSocketReturn,
+  IUseSSEOptions,
+  IUseSSEReturn,
+  IUseWebSocketOptions,
+  IUseWebSocketReturn,
+};

@@ -5,9 +5,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ConnectionState, UseSSEOptions, UseSSEReturn } from "./constants";
+import type { ConnectionState, IUseSSEOptions, IUseSSEReturn } from "./type";
 
-export function useSSE(options: UseSSEOptions): UseSSEReturn {
+export function useSSE(options: IUseSSEOptions): IUseSSEReturn {
   const { url, autoConnect = true, withCredentials } = options;
 
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
@@ -32,12 +32,12 @@ export function useSSE(options: UseSSEOptions): UseSSEReturn {
 
     setConnectionState("connecting");
 
-    const handleOpen = () => {
+    const handleOpen = (): void => {
       setConnectionState("connected");
       setError(null);
     };
 
-    const handleError = () => {
+    const handleError = (): void => {
       // EventSource 会自动重连，这里只标记为 error/connecting
       const err = new Error("SSE connection error");
       setError(err);
@@ -100,17 +100,25 @@ export function useSSE(options: UseSSEOptions): UseSSEReturn {
     }
   }, []);
 
-  // 监听事件
-  const on = useCallback((event: string, callback: (event: MessageEvent) => void) => {
-    const es = eventSourceRef.current;
-    if (!es) {
-      return () => {};
-    }
-    es.addEventListener(event, callback as EventListener);
-    return () => {
-      es.removeEventListener(event, callback as EventListener);
-    };
+  // no-op 函数，用于当 EventSource 不存在时返回
+  const noop = useCallback((): void => {
+    // No operation - EventSource not available
   }, []);
+
+  // 监听事件
+  const on = useCallback(
+    (event: string, callback: (event: MessageEvent) => void) => {
+      const es = eventSourceRef.current;
+      if (!es) {
+        return noop;
+      }
+      es.addEventListener(event, callback as EventListener);
+      return () => {
+        es.removeEventListener(event, callback as EventListener);
+      };
+    },
+    [noop],
+  );
 
   return {
     eventSource,
