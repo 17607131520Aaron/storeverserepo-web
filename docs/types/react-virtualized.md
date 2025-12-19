@@ -31,13 +31,7 @@ function VirtualList() {
   return (
     <AutoSizer>
       {({ height, width }) => (
-        <List
-          height={height}
-          width={width}
-          rowCount={1000}
-          rowHeight={50}
-          rowRenderer={rowRenderer}
-        />
+        <List height={height} width={width} rowCount={1000} rowHeight={50} rowRenderer={rowRenderer} />
       )}
     </AutoSizer>
   );

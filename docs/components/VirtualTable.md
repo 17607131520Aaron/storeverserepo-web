@@ -66,15 +66,7 @@ function TablePage() {
     // ... 更多数据
   ];
 
-  return (
-    <VirtualTableComponent<IRecord>
-      columns={columns}
-      dataSource={data}
-      height={600}
-      rowHeight={44}
-      rowKey="id"
-    />
-  );
+  return <VirtualTableComponent<IRecord> columns={columns} dataSource={data} height={600} rowHeight={44} rowKey="id" />;
 }
 ```
 
@@ -171,15 +163,7 @@ const columns: IVirtualColumn<IUser>[] = [
 function UserTable() {
   const [data, setData] = useState<IUser[]>([]);
 
-  return (
-    <VirtualTableComponent<IUser>
-      columns={columns}
-      dataSource={data}
-      height={600}
-      rowHeight={44}
-      rowKey="id"
-    />
-  );
+  return <VirtualTableComponent<IUser> columns={columns} dataSource={data} height={600} rowHeight={44} rowKey="id" />;
 }
 ```
 
@@ -255,15 +239,7 @@ function LargeDataTable() {
     role: index % 2 === 0 ? "admin" : "user",
   }));
 
-  return (
-    <VirtualTableComponent<IUser>
-      columns={columns}
-      dataSource={data}
-      height={600}
-      rowHeight={44}
-      rowKey="id"
-    />
-  );
+  return <VirtualTableComponent<IUser> columns={columns} dataSource={data} height={600} rowHeight={44} rowKey="id" />;
 }
 ```
 

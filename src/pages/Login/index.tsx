@@ -88,9 +88,7 @@ const LoginPage: React.FC = () => {
               <span className="login-page__card-pill">Beta · 内部环境</span>
             </div>
 
-            {error ? (
-              <Alert showIcon message={error} style={{ marginBottom: 16 }} type="error" />
-            ) : null}
+            {error ? <Alert showIcon message={error} style={{ marginBottom: 16 }} type="error" /> : null}
 
             <Form<ILoginFormValues>
               form={form}

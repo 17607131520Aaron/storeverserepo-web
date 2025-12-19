@@ -52,12 +52,7 @@ import {
 ### localStorage 操作
 
 ```tsx
-import {
-  setLocalStorage,
-  getLocalStorage,
-  removeLocalStorage,
-  clearLocalStorage,
-} from "@/utils/StorageValue";
+import { setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage } from "@/utils/StorageValue";
 
 // 存储字符串
 setLocalStorage("username", "张三");
@@ -79,12 +74,7 @@ clearLocalStorage();
 ### sessionStorage 操作
 
 ```tsx
-import {
-  setSessionStorage,
-  getSessionStorage,
-  removeSessionStorage,
-  clearSessionStorage,
-} from "@/utils/StorageValue";
+import { setSessionStorage, getSessionStorage, removeSessionStorage, clearSessionStorage } from "@/utils/StorageValue";
 
 // API 与 localStorage 相同
 setSessionStorage("tempData", { value: "临时数据" });

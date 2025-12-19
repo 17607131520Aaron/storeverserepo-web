@@ -176,8 +176,7 @@ export default [
           prefix: ["I"],
           // 排除全局类型定义和第三方库类型定义
           filter: {
-            regex:
-              "^(ImportMeta|ImportMetaEnv|NodeJS|Window|Document|HTMLElement|ReactBarcodeProps|QRCodeProps)$",
+            regex: "^(ImportMeta|ImportMetaEnv|NodeJS|Window|Document|HTMLElement|ReactBarcodeProps|QRCodeProps)$",
             match: false,
           },
         },
@@ -255,16 +254,7 @@ export default [
           // 3. 项目内部别名（internal，如 @/**）
           // 4. 当前项目内的相对路径（parent/sibling）
           // 5. 样式文件（css/scss/less）始终在最后
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-            "object",
-            "type",
-          ],
+          groups: ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
           pathGroups: [
             {
               // react 单独分组，始终在第一行
@@ -312,7 +302,7 @@ export default [
       "import/no-duplicates": ["error", { "prefer-inline": false }],
 
       // ========= 复杂度 & 风格（不和 Prettier 冲突）=========
-      "max-lines": ["error", { max: 500 }],
+      // "max-lines": ["error", { max: 500 }],
       // "max-lines-per-function": ["error", { max: 200 }],
       "max-params": ["error", { max: 4 }],
       "max-len": [

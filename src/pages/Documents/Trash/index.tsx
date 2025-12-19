@@ -62,12 +62,7 @@ const DocumentsTrash: React.FC = () => {
           minHeight: "400px",
         }}
       >
-        <Table<IDocumentRecord>
-          columns={columns}
-          dataSource={mockData}
-          pagination={false}
-          rowKey="id"
-        />
+        <Table<IDocumentRecord> columns={columns} dataSource={mockData} pagination={false} rowKey="id" />
       </div>
     </div>
   );

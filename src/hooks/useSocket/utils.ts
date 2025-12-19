@@ -91,12 +91,7 @@ export function setupWebSocketHandlers(params: ISetupHandlersParams): void {
     webSocketRef.current = null;
     setWebSocket(null);
     callbacksRef.current.onClose?.(event);
-    if (
-      shouldReconnectRef.current &&
-      !isManualDisconnectRef.current &&
-      event.code !== 1000 &&
-      event.code !== 1001
-    ) {
+    if (shouldReconnectRef.current && !isManualDisconnectRef.current && event.code !== 1000 && event.code !== 1001) {
       if (reconnectAttempts === Infinity || reconnectAttemptsRef.current < reconnectAttempts) {
         reconnectAttemptsRef.current += 1;
         clearReconnectTimer();

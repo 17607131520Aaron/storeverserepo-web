@@ -1,10 +1,6 @@
 type ReportSender = (payload: INormalizedPayload) => Promise<void> | void;
 
-export type ClientIssueType =
-  | "runtime-error"
-  | "unhandled-rejection"
-  | "react-render"
-  | "interaction-error";
+export type ClientIssueType = "runtime-error" | "unhandled-rejection" | "react-render" | "interaction-error";
 
 export interface IClientIssuePayload {
   type: ClientIssueType;
@@ -126,10 +122,7 @@ export const initGlobalClientErrorReporting = (): (() => void) | undefined => {
  * 包装交互/业务逻辑，自动捕获并上报异常
  * 用法：onClick={withClientErrorGuard("按钮名称", handler)}
  */
-export const withClientErrorGuard = <T extends (...args: unknown[]) => unknown>(
-  actionName: string,
-  fn: T,
-): T =>
+export const withClientErrorGuard = <T extends (...args: unknown[]) => unknown>(actionName: string, fn: T): T =>
   ((...args: Parameters<T>): ReturnType<T> => {
     try {
       const result = fn(...args) as ReturnType<T>;

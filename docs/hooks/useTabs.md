@@ -51,17 +51,8 @@ function App() {
 import { useTabs } from "@/app/TabsContext";
 
 function MyComponent() {
-  const {
-    tabs,
-    activeKey,
-    refreshKey,
-    refreshingKey,
-    isTabSwitching,
-    addTab,
-    removeTab,
-    setActiveTab,
-    refreshTab,
-  } = useTabs();
+  const { tabs, activeKey, refreshKey, refreshingKey, isTabSwitching, addTab, removeTab, setActiveTab, refreshTab } =
+    useTabs();
 
   return (
     <div>

@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-import { Typography } from 'antd';
+import { Typography } from "antd";
 
 const { Title } = Typography;
 
@@ -33,9 +33,7 @@ const DashboardAnalysis: React.FC = () => {
         <Title level={3} style={{ color: "#4b5563", fontWeight: 500 }}>
           统计分析页面
         </Title>
-        <p style={{ color: "#6b7280", fontSize: "16px", marginTop: "16px" }}>
-          这里将展示系统的统计分析数据
-        </p>
+        <p style={{ color: "#6b7280", fontSize: "16px", marginTop: "16px" }}>这里将展示系统的统计分析数据</p>
       </div>
     </div>
   );

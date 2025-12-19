@@ -65,12 +65,7 @@ pnpm add socket.io-client
 import { useSocket, useSSE } from "@/hooks/useSocket";
 
 // 导入类型
-import type {
-  UseSocketOptions,
-  UseSocketReturn,
-  UseSSEOptions,
-  UseSSEReturn,
-} from "@/hooks/useSocket";
+import type { UseSocketOptions, UseSocketReturn, UseSSEOptions, UseSSEReturn } from "@/hooks/useSocket";
 ```
 
 ---

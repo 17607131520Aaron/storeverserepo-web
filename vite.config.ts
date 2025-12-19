@@ -101,8 +101,7 @@ export default defineConfig(({ mode }) => {
       // CSS 模块配置
       modules: {
         // 生成类名的规则：localIdentName 在开发环境使用，hashPrefix 在生产环境使用
-        generateScopedName:
-          mode === "production" ? "[hash:base64:8]" : "[name]__[local]___[hash:base64:5]",
+        generateScopedName: mode === "production" ? "[hash:base64:8]" : "[name]__[local]___[hash:base64:5]",
         // 哈希策略
         hashPrefix: "prefix",
         // 类名导出方式
@@ -120,16 +119,7 @@ export default defineConfig(({ mode }) => {
     },
     // 依赖预构建优化
     optimizeDeps: {
-      include: [
-        "react",
-        "react-dom",
-        "react-router-dom",
-        "antd",
-        "@ant-design/icons",
-        "axios",
-        "dayjs",
-        "lodash",
-      ],
+      include: ["react", "react-dom", "react-router-dom", "antd", "@ant-design/icons", "axios", "dayjs", "lodash"],
       exclude: [],
     },
     build: {

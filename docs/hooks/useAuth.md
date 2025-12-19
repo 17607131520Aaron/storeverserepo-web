@@ -174,12 +174,7 @@ function LoginPage() {
   return (
     <form onSubmit={handleSubmit}>
       <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="用户名" />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="密码"
-      />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码" />
       <button type="submit" disabled={loading}>
         登录
       </button>

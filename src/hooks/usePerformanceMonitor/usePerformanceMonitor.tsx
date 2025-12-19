@@ -1,10 +1,4 @@
-import React, {
-  Profiler,
-  useEffect,
-  useRef,
-  type ProfilerOnRenderCallback,
-  type ReactNode,
-} from "react";
+import React, { Profiler, useEffect, useRef, type ProfilerOnRenderCallback, type ReactNode } from "react";
 
 import usePagePerformanceMonitor from "./usePerformanceMonitorHook";
 
@@ -88,12 +82,7 @@ const PerformanceMonitor: React.FC<IPerformanceMonitorProps> = ({
 
       console.log(`%c⚡ 性能监控 - ${id}`, style);
       console.log(`%c阶段:`, resetStyle, phaseText);
-      console.log(
-        `%c实际渲染时间:`,
-        resetStyle,
-        `${actualDuration.toFixed(2)}ms`,
-        actualDuration > 16 ? "⚠️" : "✅",
-      );
+      console.log(`%c实际渲染时间:`, resetStyle, `${actualDuration.toFixed(2)}ms`, actualDuration > 16 ? "⚠️" : "✅");
       console.log(`%c基准渲染时间:`, resetStyle, `${baseDuration.toFixed(2)}ms`);
       console.log(`%c开始时间:`, resetStyle, `${startTime.toFixed(2)}ms`);
       console.log(`%c提交时间:`, resetStyle, `${commitTime.toFixed(2)}ms`);
@@ -108,9 +97,7 @@ const PerformanceMonitor: React.FC<IPerformanceMonitorProps> = ({
 
       // 如果渲染时间过长，输出警告
       if (actualDuration > 50) {
-        console.warn(
-          `⚠️ 性能警告: 组件 "${id}" 渲染时间过长 (${actualDuration.toFixed(2)}ms)，建议优化`,
-        );
+        console.warn(`⚠️ 性能警告: 组件 "${id}" 渲染时间过长 (${actualDuration.toFixed(2)}ms)，建议优化`);
       }
 
       // 在标签下追加一次“页面性能指标”（DNS/TCP/FCP 等），保证每个页面只调用一次

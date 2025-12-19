@@ -9,11 +9,7 @@ import { io } from "socket.io-client";
 import type { ConnectionState, IEmitResult, IUseSocketOptions, IUseSocketReturn } from "./type";
 import { socketCache } from "./utils";
 
-import type {
-  SocketOptions as IOSocketOptions,
-  ManagerOptions,
-  Socket,
-} from "socket.io-client";
+import type { SocketOptions as IOSocketOptions, ManagerOptions, Socket } from "socket.io-client";
 
 export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   const { url, autoConnect = true, ...socketOptions } = options;
@@ -147,20 +143,17 @@ export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   }, []);
 
   // 监听事件
-  const on = useCallback(
-    <T = unknown>(event: string, callback: (data: T) => void): (() => void) => {
-      if (!socketRef.current) {
-        return (): void => {
-          // No operation - socket not available
-        };
-      }
-      socketRef.current.on(event, callback as (...args: unknown[]) => void);
+  const on = useCallback(<T = unknown>(event: string, callback: (data: T) => void): (() => void) => {
+    if (!socketRef.current) {
       return (): void => {
-        socketRef.current?.off(event, callback as (...args: unknown[]) => void);
+        // No operation - socket not available
       };
-    },
-    [],
-  );
+    }
+    socketRef.current.on(event, callback as (...args: unknown[]) => void);
+    return (): void => {
+      socketRef.current?.off(event, callback as (...args: unknown[]) => void);
+    };
+  }, []);
 
   // 取消监听
   const off = useCallback((event: string, callback?: (...args: unknown[]) => void): void => {
@@ -184,11 +177,7 @@ export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   }, []);
 
   // 发送消息（带确认）
-  const emitWithAck = <T = unknown>(
-    event: string,
-    data?: unknown,
-    timeout = 5000,
-  ): Promise<IEmitResult<T>> => {
+  const emitWithAck = <T = unknown>(event: string, data?: unknown, timeout = 5000): Promise<IEmitResult<T>> => {
     return new Promise((resolve) => {
       if (!socketRef.current?.connected) {
         resolve({ error: "Socket not connected", success: false });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -76,9 +76,7 @@ const NotFoundPage: React.FC = () => {
           <div className="not-found-title">404</div>
           <div className="not-found-subtitle">抱歉，您访问的页面不存在</div>
           <div className="not-found-actions">
-            <Paragraph className="not-found-page-description">
-              页面可能已被删除、移动或暂时不可用
-            </Paragraph>
+            <Paragraph className="not-found-page-description">页面可能已被删除、移动或暂时不可用</Paragraph>
             <Space wrap className="not-found-buttons" size="large">
               <Button
                 className="not-found-page-button-retry"

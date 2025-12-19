@@ -173,17 +173,13 @@ const requestMethod = async <T, R>(
 };
 
 // 导出请求方法
-export const get = <T, R>(config: IRequestConfig<T>): Promise<R> =>
-  requestMethod<T, R>("GET", config);
+export const get = <T, R>(config: IRequestConfig<T>): Promise<R> => requestMethod<T, R>("GET", config);
 
-export const post = <T, R>(config: IRequestConfig<T>): Promise<R> =>
-  requestMethod<T, R>("POST", config);
+export const post = <T, R>(config: IRequestConfig<T>): Promise<R> => requestMethod<T, R>("POST", config);
 
-export const put = <T, R>(config: IRequestConfig<T>): Promise<R> =>
-  requestMethod<T, R>("PUT", config);
+export const put = <T, R>(config: IRequestConfig<T>): Promise<R> => requestMethod<T, R>("PUT", config);
 
-export const del = <T, R>(config: IRequestConfig<T>): Promise<R> =>
-  requestMethod<T, R>("DELETE", config);
+export const del = <T, R>(config: IRequestConfig<T>): Promise<R> => requestMethod<T, R>("DELETE", config);
 
 // 文件上传公共逻辑
 const uploadFiles = async <T>(

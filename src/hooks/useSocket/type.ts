@@ -94,11 +94,7 @@ export interface IUseSocketReturn {
   /** 发送消息 */
   emit: (event: string, data?: unknown) => void;
   /** 发送消息（带确认） */
-  emitWithAck: <T = unknown>(
-    event: string,
-    data?: unknown,
-    timeout?: number,
-  ) => Promise<IEmitResult<T>>;
+  emitWithAck: <T = unknown>(event: string, data?: unknown, timeout?: number) => Promise<IEmitResult<T>>;
 }
 
 /** WebSocket 配置选项 */

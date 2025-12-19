@@ -81,11 +81,7 @@ export function VirtualTableComponent<RecordType>({
     };
   }, [columns]);
 
-  const renderCell = (
-    col: IVirtualColumn<RecordType>,
-    record: RecordType,
-    index: number,
-  ): ReactNode => {
+  const renderCell = (col: IVirtualColumn<RecordType>, record: RecordType, index: number): ReactNode => {
     const value =
       col.dataIndex !== null && col.dataIndex !== undefined
         ? (record[col.dataIndex as keyof RecordType] as unknown)
@@ -191,10 +187,7 @@ export function VirtualTableComponent<RecordType>({
     <div className={tableClass}>
       <div className="ant-table-container">
         <div className="virtual-table-header ant-table-header">
-          <div
-            className="virtual-table-header-row ant-table-thead"
-            style={{ height: headerHeight }}
-          >
+          <div className="virtual-table-header-row ant-table-thead" style={{ height: headerHeight }}>
             {columns.map((col, index) => (
               <div
                 key={col.key || String(col.dataIndex) || index}
@@ -225,9 +218,7 @@ export function VirtualTableComponent<RecordType>({
                 {loading && (
                   <div className="virtual-table-loading">
                     <div className="virtual-table-loading-spinner" />
-                    <div className="virtual-table-loading-text">
-                      {loadingText ?? "数据加载中..."}
-                    </div>
+                    <div className="virtual-table-loading-text">{loadingText ?? "数据加载中..."}</div>
                   </div>
                 )}
               </>

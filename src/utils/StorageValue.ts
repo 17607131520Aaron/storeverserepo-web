@@ -73,8 +73,7 @@ const clearStorage = (storage: Storage): void => {
 };
 
 // localStorage 相关方法
-export const setLocalStorage = (key: string, value: TStorageValue): void =>
-  setStorage(localStorage, key, value);
+export const setLocalStorage = (key: string, value: TStorageValue): void => setStorage(localStorage, key, value);
 
 export const getLocalStorage = (key: string): TStorageValue => getStorage(localStorage, key);
 
@@ -83,8 +82,7 @@ export const removeLocalStorage = (key: string): void => removeStorage(localStor
 export const clearLocalStorage = (): void => clearStorage(localStorage);
 
 // sessionStorage 相关方法
-export const setSessionStorage = (key: string, value: TStorageValue): void =>
-  setStorage(sessionStorage, key, value);
+export const setSessionStorage = (key: string, value: TStorageValue): void => setStorage(sessionStorage, key, value);
 
 export const getSessionStorage = (key: string): TStorageValue => getStorage(sessionStorage, key);
 

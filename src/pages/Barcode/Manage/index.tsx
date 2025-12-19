@@ -1,25 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 
-import {
-  Button,
-  Card,
-  Col,
-  Form,
-  Input,
-  InputNumber,
-  message,
-  Row,
-  Select,
-  Space,
-  Typography,
-} from 'antd';
-import { QRCodeCanvas } from 'qrcode.react';
-import Barcode from 'react-barcode';
+import { Button, Card, Col, Form, Input, InputNumber, message, Row, Select, Space, Typography } from "antd";
+import { QRCodeCanvas } from "qrcode.react";
+import Barcode from "react-barcode";
 
 import { CODE_TYPES } from "./constants";
 import type { CodeType, IGeneratedCode } from "./constants";
-import { generateCodeId, generateRandomValueByType, validateValueByType } from './utils';
-import './index.scss';
+import { generateCodeId, generateRandomValueByType, validateValueByType } from "./utils";
+import "./index.scss";
 
 const { Title, Text } = Typography;
 
@@ -132,9 +120,7 @@ const BarcodeManage: React.FC = () => {
   return (
     <div className="barcode-manage-page">
       <Title level={3}>条码管理</Title>
-      <Text type="secondary">
-        通过选择条码类型与数量，一键随机生成多个条码，可用于测试或打印前预览。
-      </Text>
+      <Text type="secondary">通过选择条码类型与数量，一键随机生成多个条码，可用于测试或打印前预览。</Text>
 
       <div
         style={{
@@ -162,23 +148,11 @@ const BarcodeManage: React.FC = () => {
               }}
               layout="vertical"
             >
-              <Form.Item
-                label="条码类型"
-                name="type"
-                rules={[{ required: true, message: "请选择条码类型" }]}
-              >
-                <Select
-                  options={CODE_TYPES}
-                  placeholder="请选择条码类型"
-                  style={{ width: "100%" }}
-                />
+              <Form.Item label="条码类型" name="type" rules={[{ required: true, message: "请选择条码类型" }]}>
+                <Select options={CODE_TYPES} placeholder="请选择条码类型" style={{ width: "100%" }} />
               </Form.Item>
 
-              <Form.Item
-                label="生成数量"
-                name="count"
-                rules={[{ required: true, message: "请输入生成数量" }]}
-              >
+              <Form.Item label="生成数量" name="count" rules={[{ required: true, message: "请输入生成数量" }]}>
                 <InputNumber max={100} min={1} placeholder="数量" style={{ width: "100%" }} />
               </Form.Item>
 
@@ -256,9 +230,7 @@ const BarcodeManage: React.FC = () => {
           title={
             <Space size={12}>
               <span>生成结果</span>
-              <Text type="secondary">
-                当前类型：{CODE_TYPES.find((i) => i.value === lastType)?.label ?? lastType}
-              </Text>
+              <Text type="secondary">当前类型：{CODE_TYPES.find((i) => i.value === lastType)?.label ?? lastType}</Text>
             </Space>
           }
         >

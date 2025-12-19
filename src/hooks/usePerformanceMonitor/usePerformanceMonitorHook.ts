@@ -57,8 +57,7 @@ export const usePerformanceMonitor = (): {
       // DOM解析时间
       domParseTime: navigation.domInteractive - navigation.responseEnd,
       // DOMContentLoaded时间
-      domContentLoadedTime:
-        navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+      domContentLoadedTime: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
       // 页面加载时间
       loadTime: navigation.loadEventEnd - navigation.loadEventStart,
       // 总时间
@@ -107,28 +106,14 @@ export const usePerformanceMonitor = (): {
     console.log(`%cTCP连接时间:`, resetStyle, `${metrics.tcpTime.toFixed(2)}ms`);
     console.log(`%c请求响应时间:`, resetStyle, `${metrics.requestTime.toFixed(2)}ms`);
     console.log(`%cDOM解析时间:`, resetStyle, `${metrics.domParseTime.toFixed(2)}ms`);
-    console.log(
-      `%cDOMContentLoaded时间:`,
-      resetStyle,
-      `${metrics.domContentLoadedTime.toFixed(2)}ms`,
-    );
+    console.log(`%cDOMContentLoaded时间:`, resetStyle, `${metrics.domContentLoadedTime.toFixed(2)}ms`);
     console.log(`%c页面加载时间:`, resetStyle, `${metrics.loadTime.toFixed(2)}ms`);
     console.log(`%c总加载时间:`, resetStyle, `${metrics.totalTime.toFixed(2)}ms`);
     if (metrics.fcp > 0) {
-      console.log(
-        `%c首次内容绘制 (FCP):`,
-        resetStyle,
-        `${metrics.fcp.toFixed(2)}ms`,
-        metrics.fcp < 1800 ? "✅" : "⚠️",
-      );
+      console.log(`%c首次内容绘制 (FCP):`, resetStyle, `${metrics.fcp.toFixed(2)}ms`, metrics.fcp < 1800 ? "✅" : "⚠️");
     }
     if (metrics.lcp > 0) {
-      console.log(
-        `%c最大内容绘制 (LCP):`,
-        resetStyle,
-        `${metrics.lcp.toFixed(2)}ms`,
-        metrics.lcp < 2500 ? "✅" : "⚠️",
-      );
+      console.log(`%c最大内容绘制 (LCP):`, resetStyle, `${metrics.lcp.toFixed(2)}ms`, metrics.lcp < 2500 ? "✅" : "⚠️");
     }
     const payload: IPagePerformanceReport = {
       ...metrics,

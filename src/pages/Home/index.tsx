@@ -339,16 +339,10 @@ const Home: React.FC = () => {
                   stroke="#8c8c8c"
                   tick={{ fill: "#8c8c8c", fontSize: 12 }}
                 />
-                <YAxis
-                  axisLine={{ stroke: "#e8e8e8" }}
-                  stroke="#8c8c8c"
-                  tick={{ fill: "#8c8c8c", fontSize: 12 }}
-                />
+                <YAxis axisLine={{ stroke: "#e8e8e8" }} stroke="#8c8c8c" tick={{ fill: "#8c8c8c", fontSize: 12 }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
-                  formatter={(value) => (
-                    <span style={{ color: "#595959", fontSize: 12 }}>{value}</span>
-                  )}
+                  formatter={(value) => <span style={{ color: "#595959", fontSize: 12 }}>{value}</span>}
                   iconType="circle"
                   wrapperStyle={{ paddingTop: 20 }}
                 />
@@ -399,14 +393,7 @@ const Home: React.FC = () => {
               <PieChart>
                 <defs>
                   {documentCategoryData.map((item, index) => (
-                    <linearGradient
-                      key={index}
-                      id={`pieGradient${index}`}
-                      x1="0"
-                      x2="1"
-                      y1="0"
-                      y2="1"
-                    >
+                    <linearGradient key={index} id={`pieGradient${index}`} x1="0" x2="1" y1="0" y2="1">
                       <stop offset="0%" stopColor={item.gradient[0]} stopOpacity={1} />
                       <stop offset="100%" stopColor={item.gradient[1]} stopOpacity={1} />
                     </linearGradient>
@@ -485,11 +472,7 @@ const Home: React.FC = () => {
                   stroke="#8c8c8c"
                   tick={{ fill: "#8c8c8c", fontSize: 12 }}
                 />
-                <YAxis
-                  axisLine={{ stroke: "#e8e8e8" }}
-                  stroke="#8c8c8c"
-                  tick={{ fill: "#8c8c8c", fontSize: 12 }}
-                />
+                <YAxis axisLine={{ stroke: "#e8e8e8" }} stroke="#8c8c8c" tick={{ fill: "#8c8c8c", fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#fff",
@@ -515,7 +498,6 @@ const Home: React.FC = () => {
         </Col>
       </Row>
 
-      {/* 快捷入口 */}
       <div>
         <Title level={4} style={{ color: "#1f2937", fontWeight: 600, marginBottom: 16 }}>
           快捷入口

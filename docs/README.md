@@ -139,13 +139,7 @@ function LoginPage() {
   };
 
   return (
-    <div>
-      {isAuthenticated ? (
-        <button onClick={logout}>退出登录</button>
-      ) : (
-        <LoginForm onLogin={handleLogin} />
-      )}
-    </div>
+    <div>{isAuthenticated ? <button onClick={logout}>退出登录</button> : <LoginForm onLogin={handleLogin} />}</div>
   );
 }
 ```

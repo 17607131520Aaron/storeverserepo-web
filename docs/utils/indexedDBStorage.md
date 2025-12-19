@@ -25,12 +25,7 @@
 ### 快速示例
 
 ```ts
-import {
-  saveProjectInfo,
-  getProjectInfo,
-  getAllProjectInfo,
-  deleteProjectInfo,
-} from "@/utils/indexedDBStorage";
+import { saveProjectInfo, getProjectInfo, getAllProjectInfo, deleteProjectInfo } from "@/utils/indexedDBStorage";
 
 // 写入/更新
 await saveProjectInfo("user-profile", { id: 1, name: "张三", roles: ["admin"] });
