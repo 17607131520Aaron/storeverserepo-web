@@ -206,7 +206,7 @@ storeverserepo-web/
 
 ### 4. 本地数据存储（IndexedDB）
 
-- 工具：`src/utils/indexedDBStorage.ts`，文档见 `docs/indexedDBStorage.md`
+- 工具：`src/utils/indexedDBStorage.ts`（基于 Dexie 实现），文档见 `docs/indexedDBStorage.md`
 - 支持在浏览器 IndexedDB 中存取项目数据（键值 + 任意 JSON），适合配置/缓存/最近记录
 - 方法：`saveProjectInfo` / `getProjectInfo` / `getAllProjectInfo` / `deleteProjectInfo` / `clearProjectInfo`
 
@@ -227,13 +227,13 @@ const DashboardOverview = lazy(() => import('@/pages/Dashboard/Overview'));
 - 图表库、Socket 库等按需分割
 - 页面代码和公共代码分离
 
-### 5. 类型安全
+### 7. 类型安全
 
 - 完整的 TypeScript 类型定义
 - 严格的类型检查配置
 - 接口、类型、枚举统一命名规范（PascalCase，接口以 I 开头）
 
-### 6. 代码规范
+### 8. 代码规范
 
 项目采用统一的代码规范体系：
 

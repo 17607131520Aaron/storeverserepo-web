@@ -1,9 +1,9 @@
 /**
- * 简易 IndexedDB 工具，用于存储项目相关信息
+ * 基于 Dexie 的 IndexedDB 工具，用于存储项目相关信息
  */
+import Dexie, { type Table } from "dexie";
 
 const DB_NAME = "storeverse-app";
-const DB_VERSION = 1;
 const STORE_NAME = "project_info";
 
 export interface IProjectInfoRecord {
@@ -12,54 +12,24 @@ export interface IProjectInfoRecord {
   updatedAt: number;
 }
 
-const isIndexedDBAvailable = (): boolean =>
-  typeof window !== "undefined" && typeof window.indexedDB !== "undefined";
+class ProjectInfoDB extends Dexie {
+  public projectInfo!: Table<IProjectInfoRecord, string>;
 
-const openDatabase = (): Promise<IDBDatabase> =>
-  new Promise((resolve, reject) => {
-    if (!isIndexedDBAvailable()) {
-      reject(new Error("IndexedDB 不可用"));
-      return;
-    }
+  constructor() {
+    super(DB_NAME);
+    this.version(1).stores({
+      [STORE_NAME]: "&key", // key 为主键
+    });
+    this.projectInfo = this.table(STORE_NAME);
+  }
+}
 
-    const request = window.indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "key" });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("IndexedDB 打开失败"));
-  });
-
-const wrapRequest = <T>(request: IDBRequest<T>): Promise<T> =>
-  new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error("IndexedDB 操作失败"));
-  });
-
-const runStore = async <T>(
-  mode: IDBTransactionMode,
-  handler: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> => {
-  const db = await openDatabase();
-  const tx = db.transaction(STORE_NAME, mode);
-  const store = tx.objectStore(STORE_NAME);
-  const request = handler(store);
-  return await wrapRequest(request);
-};
+const db = new ProjectInfoDB();
 
 export const saveProjectInfo = async (key: string, value: unknown): Promise<void> => {
   try {
-    const record: IProjectInfoRecord = {
-      key,
-      value,
-      updatedAt: Date.now(),
-    };
-    await runStore("readwrite", (store) => store.put(record));
+    const record: IProjectInfoRecord = { key, value, updatedAt: Date.now() };
+    await db.projectInfo.put(record);
   } catch (error) {
     console.warn("保存项目信息到 IndexedDB 失败（已忽略）：", error);
   }
@@ -67,9 +37,7 @@ export const saveProjectInfo = async (key: string, value: unknown): Promise<void
 
 export const getProjectInfo = async <T = unknown>(key: string): Promise<T | null> => {
   try {
-    const result = await runStore<IProjectInfoRecord | undefined>("readonly", (store) =>
-      store.get(key),
-    );
+    const result = await db.projectInfo.get(key);
     return (result?.value as T) ?? null;
   } catch (error) {
     console.warn("读取 IndexedDB 项目信息失败（已忽略）：", error);
@@ -79,8 +47,7 @@ export const getProjectInfo = async <T = unknown>(key: string): Promise<T | null
 
 export const getAllProjectInfo = async (): Promise<IProjectInfoRecord[]> => {
   try {
-    const result = await runStore<IProjectInfoRecord[]>("readonly", (store) => store.getAll());
-    return result ?? [];
+    return await db.projectInfo.toArray();
   } catch (error) {
     console.warn("读取全部 IndexedDB 项目信息失败（已忽略）：", error);
     return [];
@@ -89,7 +56,7 @@ export const getAllProjectInfo = async (): Promise<IProjectInfoRecord[]> => {
 
 export const deleteProjectInfo = async (key: string): Promise<void> => {
   try {
-    await runStore("readwrite", (store) => store.delete(key));
+    await db.projectInfo.delete(key);
   } catch (error) {
     console.warn("删除 IndexedDB 项目信息失败（已忽略）：", error);
   }
@@ -97,7 +64,7 @@ export const deleteProjectInfo = async (key: string): Promise<void> => {
 
 export const clearProjectInfo = async (): Promise<void> => {
   try {
-    await runStore("readwrite", (store) => store.clear());
+    await db.projectInfo.clear();
   } catch (error) {
     console.warn("清空 IndexedDB 项目信息失败（已忽略）：", error);
   }
