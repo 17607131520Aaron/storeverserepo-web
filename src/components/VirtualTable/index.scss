@@ -1,12 +1,12 @@
-@import "antd/dist/reset.css";
+@import url("antd/dist/reset.css");
 
 .virtual-table {
+  font-size: 14px;
+  color: rgb(0 0 0 / 0.88);
+  background: #fff;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
-  background: #fff;
-  color: rgb(0 0 0 / 88%);
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.03);
 
   .ant-table-container {
     border-radius: 8px;
@@ -35,7 +35,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgb(255 255 255 / 80%);
+    background: rgb(255 255 255 / 0.8);
     inset: 0;
   }
 
@@ -50,8 +50,8 @@
   }
 
   .virtual-table-loading-text {
-    color: rgb(0 0 0 / 65%);
     font-size: 13px;
+    color: rgb(0 0 0 / 0.65);
   }
 
   .virtual-table-row {
@@ -84,13 +84,13 @@
   }
 
   .virtual-table-header-cell {
-    background: #fafafa;
     font-weight: 500;
+    background: #fafafa;
   }
 
   .virtual-table-empty {
     padding: 32px 16px;
-    color: rgb(0 0 0 / 45%);
+    color: rgb(0 0 0 / 0.45);
     text-align: center;
   }
 

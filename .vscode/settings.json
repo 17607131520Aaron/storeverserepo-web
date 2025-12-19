@@ -123,8 +123,8 @@
   "stylelint.validate": ["css", "scss", "less"],
   // 不忽略 stylelint-disable 注释
   "stylelint.ignoreDisables": false,
-  // 明确指定 Stylelint 配置文件路径（优先使用 stylelint.config.cjs）
-  "stylelint.config": "stylelint.config.cjs",
+  // 明确指定 Stylelint 配置文件路径
+  "stylelint.config": ".stylelintrc.json",
   // Ant Design Less 相关配置
   "less.lint.unknownAtRules": "ignore",
   // CSS 模块支持

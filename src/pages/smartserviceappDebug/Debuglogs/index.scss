@@ -20,8 +20,8 @@
 
   &-content {
     display: flex;
-    flex: 1;
     flex-direction: column;
+    flex: 1;
     overflow: hidden;
 
     .ant-card-body {
@@ -35,13 +35,13 @@
 
   &-container {
     flex: 1;
-    box-sizing: border-box;
     padding: 16px;
-    background: #1e1e1e;
-    color: #d4d4d4;
-    font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 13px;
+    font-family: Consolas, Monaco, "Courier New", monospace;
     line-height: 1.6;
+    color: #d4d4d4;
+    background: #1e1e1e;
+    box-sizing: border-box;
     overflow: hidden auto;
 
     &::-webkit-scrollbar {
@@ -53,8 +53,8 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      border-radius: 6px;
       background: #424242;
+      border-radius: 6px;
 
       &:hover {
         background: #4e4e4e;
@@ -74,36 +74,36 @@
 
   &-item {
     padding: 4px 0;
-    border-bottom: 1px solid rgb(255 255 255 / 5%);
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
     white-space: pre-wrap;
     word-break: break-word;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: rgb(255 255 255 / 3%);
+      background-color: rgb(255 255 255 / 0.03);
     }
 
     &[data-level="error"] {
-      background-color: rgb(255 77 79 / 5%);
+      background-color: rgb(255 77 79 / 0.05);
 
       &:hover {
-        background-color: rgb(255 77 79 / 10%);
+        background-color: rgb(255 77 79 / 0.1);
       }
     }
 
     &[data-level="warn"] {
-      background-color: rgb(250 173 20 / 5%);
+      background-color: rgb(250 173 20 / 0.05);
 
       &:hover {
-        background-color: rgb(250 173 20 / 10%);
+        background-color: rgb(250 173 20 / 0.1);
       }
     }
 
     &[data-level="info"] {
-      background-color: rgb(24 144 255 / 5%);
+      background-color: rgb(24 144 255 / 0.05);
 
       &:hover {
-        background-color: rgb(24 144 255 / 10%);
+        background-color: rgb(24 144 255 / 0.1);
       }
     }
   }
@@ -123,19 +123,19 @@
   }
 
   &-data {
+    padding: 8px;
+    background: rgb(0 0 0 / 0.3);
+    border-radius: 4px;
     margin-top: 8px;
     margin-left: 68px;
-    padding: 8px;
     border-left: 2px solid #007acc;
-    border-radius: 4px;
-    background: rgb(0 0 0 / 30%);
 
     pre {
       margin: 0;
       padding: 0;
-      color: #ce9178;
-      font-family: Consolas, Monaco, "Courier New", monospace;
       font-size: 12px;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      color: #ce9178;
       white-space: pre-wrap;
       word-break: break-word;
     }
@@ -146,7 +146,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 16px;
-    border-top: 1px solid rgb(255 255 255 / 10%);
+    border-top: 1px solid rgb(255 255 255 / 0.1);
     background: #252526;
   }
 }

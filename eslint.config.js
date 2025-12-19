@@ -19,6 +19,10 @@ export default [
       "coverage",
       "public/**",
       "config/**",
+      ".stylelintrc",
+      ".prettierrc",
+      "*.config.js",
+      "*.config.ts",
     ],
   },
   // 关闭与 Prettier 冲突的规则，格式完全交给 Prettier

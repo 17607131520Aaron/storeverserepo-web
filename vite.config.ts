@@ -2,6 +2,7 @@ import { resolve } from "path";
 
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
+import stylelint from "vite-plugin-stylelint";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -19,7 +20,16 @@ export default defineConfig(({ mode }) => {
   return {
     // 部署到 GitHub Pages 的子路径： https://17607131520Aaron.github.io/storeverserepo-web/
     base: "/storeverserepo-web/",
-    plugins: [react()],
+    plugins: [
+      react(),
+      stylelint({
+        fix: true,
+        include: ["src/**/*.{css,scss,sass}"],
+        exclude: ["node_modules"],
+        lintOnStart: false,
+        cache: true,
+      }),
+    ],
     server: {
       port: Number(env.VITE_PORT) || 8000,
       open: true,
