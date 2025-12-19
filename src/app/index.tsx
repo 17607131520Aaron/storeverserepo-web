@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Input, Layout, List, Menu, Space, Spin, Typography } from "antd";
 
+import ThemeToggle from "@/components/ThemeToggle";
 import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
 
 import { userMenuItems } from "./constants";
@@ -148,18 +149,21 @@ const AppContent: React.FC = () => {
             </div>
 
             <div className="asp-comprehension-home-header-right">
-              <Dropdown
-                menu={{
-                  items: userMenuItems,
-                  onClick: handleUserMenuClick,
-                }}
-                placement="bottomRight"
-              >
-                <Space className="asp-comprehension-home-header-content-user" style={{ cursor: "pointer" }}>
-                  <Avatar icon={<UserOutlined />} size={32} style={{ backgroundColor: "#237ffa" }} />
-                  <Text style={{ fontSize: 14, color: "#595959" }}>管理员</Text>
-                </Space>
-              </Dropdown>
+              <Space size="middle">
+                <ThemeToggle />
+                <Dropdown
+                  menu={{
+                    items: userMenuItems,
+                    onClick: handleUserMenuClick,
+                  }}
+                  placement="bottomRight"
+                >
+                  <Space className="asp-comprehension-home-header-content-user" style={{ cursor: "pointer" }}>
+                    <Avatar icon={<UserOutlined />} size={32} style={{ backgroundColor: "#237ffa" }} />
+                    <Text style={{ fontSize: 14, color: "#595959" }}>管理员</Text>
+                  </Space>
+                </Dropdown>
+              </Space>
             </div>
           </div>
         </Header>
