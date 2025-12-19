@@ -17,7 +17,8 @@ docs/
 │   ├── useAuth.md
 │   ├── usePerformanceMonitor.md
 │   ├── useTableRequest.md
-│   └── useSocket.md
+│   ├── useSocket.md
+│   └── useTabs.md
 ├── utils/                       # 工具方法文档
 │   ├── request.md
 │   ├── indexedDBStorage.md
@@ -51,6 +52,7 @@ docs/
 | [usePerformanceMonitor](./hooks/usePerformanceMonitor.md) | `src/hooks/usePerformanceMonitor` | 性能监控 Hook                 |
 | [useTableRequest](./hooks/useTableRequest.md)             | `src/hooks/useTableRequest`       | 表格请求 Hook（解决竞态问题） |
 | [useSocket](./hooks/useSocket.md)                         | `src/hooks/useSocket`             | WebSocket 连接 Hook           |
+| [useTabs](./hooks/useTabs.md)                             | `src/app/TabsContext`             | 标签页管理 Hook               |
 
 ---
 
@@ -176,6 +178,7 @@ function LoginPage() {
 - **性能监控**: [usePerformanceMonitor](./hooks/usePerformanceMonitor.md) | [PerformanceMonitorWrapper](./components/PerformanceMonitorWrapper.md)
 - **表格组件**: [VirtualTable](./components/VirtualTable.md)
 - **实时通信**: [useSocket](./hooks/useSocket.md)
+- **标签页管理**: [useTabs](./hooks/useTabs.md)
 
 ### 按类型查找
 
