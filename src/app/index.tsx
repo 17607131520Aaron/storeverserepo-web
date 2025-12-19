@@ -10,10 +10,11 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Layout, Menu, Space, Spin, Typography } from "antd";
 
+import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
+
 import { menuItems, userMenuItems } from "./constants";
 import TabsBar from "./TabsBar";
 import { TabsProvider, useTabs } from "./TabsContext";
-import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
 
 import "./app.scss";
 
@@ -237,14 +238,11 @@ const AppContent: React.FC = () => {
             <Spin
               size="large"
               spinning={isLoading}
-              style={{ minHeight: "100%" }}
+              style={{ height: "100%" }}
               tip={isRefreshing ? "页面刷新中..." : "页面加载中..."}
             >
-              <div style={{ minHeight: "100%" }}>
-                <PerformanceMonitor
-                  id={`Page-${location.pathname}`}
-                  enableConsoleLog={true}
-                >
+              <div style={{ height: "100%" }}>
+                <PerformanceMonitor enableConsoleLog id={`Page-${location.pathname}`}>
                   <Outlet key={`${location.pathname}-${refreshKey}`} />
                 </PerformanceMonitor>
               </div>
