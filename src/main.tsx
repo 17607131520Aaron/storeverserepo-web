@@ -17,9 +17,6 @@ import "./main.scss";
 
 // 初始化主题系统（必须在渲染前调用）
 initTheme();
-// 注意：主题修复功能已禁用，避免干扰现有样式
-// 如需启用，请取消下面的注释
-// initThemeFix();
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
