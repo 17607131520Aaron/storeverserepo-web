@@ -5,7 +5,7 @@ import { AutoSizer, List } from "react-virtualized";
 
 import type { IListRowProps } from "react-virtualized";
 
-import "./index.module.scss";
+import "./index.scss";
 
 export interface IVirtualColumn<RecordType> {
   title: ReactNode;

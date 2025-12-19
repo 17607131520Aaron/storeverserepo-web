@@ -7,7 +7,7 @@ import Barcode from "react-barcode";
 import { CODE_TYPES } from "./constants";
 import type { CodeType, IGeneratedCode } from "./constants";
 import { generateCodeId, generateRandomValueByType, validateValueByType } from "./utils";
-import "./index.module.scss";
+import "./index.scss";
 
 const { Title, Text } = Typography;
 

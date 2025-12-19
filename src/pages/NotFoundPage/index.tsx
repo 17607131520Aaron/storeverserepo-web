@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { ArrowLeftOutlined, HomeOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Space, Typography } from "antd";
-import "./index.module.scss";
+import "./index.scss";
 
 const { Paragraph } = Typography;
 

@@ -12,7 +12,7 @@ import { Badge, Button, Card, Input, InputNumber, Select, Space, Spin, Tooltip, 
 
 import { DEFAULT_PORT, getLogLevelColor, levelOptions } from "./constants";
 import { useDebuglogs, type ConnectionMode } from "./useDebuglogs";
-import "./index.module.scss";
+import "./index.scss";
 
 const { Text } = Typography;
 const { Search } = Input;
