@@ -383,8 +383,8 @@
   &-content {
     flex: 1;
     width: 100%;
-    height: calc(100vh - 48px);
-    max-height: calc(100vh - 48px);
+    height: calc(100vh - 48px - 40px);
+    max-height: calc(100vh - 48px - 40px);
     background: #f0f2f5;
     box-sizing: border-box;
     overflow: hidden;

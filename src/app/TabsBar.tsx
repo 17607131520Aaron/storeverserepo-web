@@ -1,0 +1,120 @@
+import React, { useRef, useEffect, useState } from "react";
+import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useTabs } from "./TabsContext";
+import "./TabsBar.scss";
+
+const TabsBar: React.FC = () => {
+  const { tabs, activeKey, setActiveTab, removeTab, closeOtherTabs, closeAllTabs, refreshTab } =
+    useTabs();
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLDivElement>(null);
+  const [refreshingTabs, setRefreshingTabs] = useState<Set<string>>(new Set());
+
+  // 滚动到活动标签
+  useEffect(() => {
+    if (activeTabRef.current && tabsContainerRef.current) {
+      const container = tabsContainerRef.current;
+      const activeTab = activeTabRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const tabRect = activeTab.getBoundingClientRect();
+
+      if (tabRect.left < containerRect.left) {
+        container.scrollLeft = activeTab.offsetLeft - 20;
+      } else if (tabRect.right > containerRect.right) {
+        container.scrollLeft = activeTab.offsetLeft - containerRect.width + tabRect.width + 20;
+      }
+    }
+  }, [activeKey]);
+
+  // 处理标签点击
+  const handleTabClick = (tab: typeof tabs[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (tab.key !== activeKey) {
+      setActiveTab(tab.key);
+    }
+  };
+
+  // 处理刷新按钮点击
+  const handleRefresh = (tab: typeof tabs[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRefreshingTabs((prev) => new Set(prev).add(tab.key));
+    refreshTab(tab.key);
+    // 500ms 后移除刷新动画
+    setTimeout(() => {
+      setRefreshingTabs((prev) => {
+        const next = new Set(prev);
+        next.delete(tab.key);
+        return next;
+      });
+    }, 500);
+  };
+
+  // 处理关闭按钮点击
+  const handleClose = (tab: typeof tabs[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeTab(tab.key);
+  };
+
+  // 处理右键菜单
+  const handleContextMenu = (tab: typeof tabs[0], e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 这里可以添加右键菜单功能，暂时先实现关闭其他标签
+    if (tab.closable && tabs.length > 1) {
+      closeOtherTabs(tab.key);
+    }
+  };
+
+  return (
+    <div className="asp-tabs-bar">
+      <div className="asp-tabs-bar-container" ref={tabsContainerRef}>
+        {tabs.map((tab) => {
+          const isActive = tab.key === activeKey;
+          return (
+            <div
+              key={tab.key}
+              ref={isActive ? activeTabRef : null}
+              className={`asp-tabs-bar-item ${isActive ? "active" : ""}`}
+              onClick={(e) => handleTabClick(tab, e)}
+              onContextMenu={(e) => handleContextMenu(tab, e)}
+            >
+              <span className="asp-tabs-bar-item-label">{tab.label}</span>
+              <div className="asp-tabs-bar-item-actions">
+                <span
+                  className={`asp-tabs-bar-item-refresh ${refreshingTabs.has(tab.key) ? "refreshing" : ""}`}
+                  onClick={(e) => handleRefresh(tab, e)}
+                  title="刷新页面"
+                >
+                  <ReloadOutlined />
+                </span>
+                {tab.closable && (
+                  <span
+                    className="asp-tabs-bar-item-close"
+                    onClick={(e) => handleClose(tab, e)}
+                    title="关闭标签"
+                  >
+                    <CloseOutlined />
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {tabs.length > 1 && (
+        <div className="asp-tabs-bar-actions">
+          <span
+            className="asp-tabs-bar-action-item"
+            onClick={closeAllTabs}
+            title="关闭所有标签"
+          >
+            关闭全部
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TabsBar;

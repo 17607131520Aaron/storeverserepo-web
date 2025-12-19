@@ -11,16 +11,19 @@ import {
 import { Avatar, Dropdown, Layout, Menu, Space, Typography } from "antd";
 
 import { menuItems, userMenuItems } from "./constants";
+import TabsBar from "./TabsBar";
+import { TabsProvider, useTabs } from "./TabsContext";
 
 import "./app.scss";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { refreshKey } = useTabs();
 
   // 获取当前选中的菜单项
   const selectedKeys = useMemo(() => {
@@ -176,13 +179,23 @@ const App: React.FC = () => {
           </div>
         </Header>
 
+        <TabsBar />
+
         <Content className="asp-comprehension-home-content">
           <div className="asp-comprehension-home-content-wrapper">
-            <Outlet />
+            <Outlet key={`${location.pathname}-${refreshKey}`} />
           </div>
         </Content>
       </Layout>
     </Layout>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <TabsProvider>
+      <AppContent />
+    </TabsProvider>
   );
 };
 
