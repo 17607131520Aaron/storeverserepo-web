@@ -174,6 +174,12 @@ export default [
           selector: "interface",
           format: ["PascalCase"],
           prefix: ["I"],
+          // 排除全局类型定义和第三方库类型定义
+          filter: {
+            regex:
+              "^(ImportMeta|ImportMetaEnv|NodeJS|Window|Document|HTMLElement|ReactBarcodeProps|QRCodeProps)$",
+            match: false,
+          },
         },
         // {
         //   selector: "class",
