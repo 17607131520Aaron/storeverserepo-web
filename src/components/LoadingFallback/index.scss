@@ -1,0 +1,27 @@
+.loading-fallback {
+  align-items: center;
+  background: transparent;
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+
+  .ant-spin {
+    position: relative;
+  }
+
+  .ant-spin-dot {
+    font-size: 20px;
+  }
+
+  .ant-spin-text {
+    color: #8c8c8c;
+    font-size: 14px;
+  }
+
+  &-placeholder {
+    height: 200px;
+    width: 200px;
+  }
+}
