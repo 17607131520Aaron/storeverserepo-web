@@ -1,7 +1,9 @@
 /**
  * 基于 Dexie 的 IndexedDB 工具，用于存储项目相关信息
  */
-import Dexie, { type Table } from "dexie";
+import Dexie from "dexie";
+
+import type { Table } from "dexie";
 
 const DB_NAME = "storeverse-app";
 const STORE_NAME = "project_info";

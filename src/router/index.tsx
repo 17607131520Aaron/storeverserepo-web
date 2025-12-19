@@ -1,6 +1,7 @@
 import { lazy } from "react";
 
-import { createHashRouter, type DataRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
+import type { DataRouter } from "react-router-dom";
 
 import RequireAuth from "./RequireAuth";
 

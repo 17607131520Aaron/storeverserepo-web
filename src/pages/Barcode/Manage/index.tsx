@@ -16,7 +16,8 @@ import {
 import { QRCodeCanvas } from 'qrcode.react';
 import Barcode from 'react-barcode';
 
-import { CODE_TYPES, type CodeType, type IGeneratedCode } from "./constants";
+import { CODE_TYPES } from "./constants";
+import type { CodeType, IGeneratedCode } from "./constants";
 import { generateCodeId, generateRandomValueByType, validateValueByType } from './utils';
 import './index.scss';
 

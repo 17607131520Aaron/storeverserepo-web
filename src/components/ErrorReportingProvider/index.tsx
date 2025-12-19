@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
+import type { ReactNode } from "react";
 
 import { initGlobalClientErrorReporting } from "@/utils/errorReporter";
 

@@ -4,15 +4,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  io,
-  type SocketOptions as IOSocketOptions,
-  type ManagerOptions,
-  type Socket,
-} from "socket.io-client";
+import { io } from "socket.io-client";
 
 import type { ConnectionState, IEmitResult, IUseSocketOptions, IUseSocketReturn } from "./type";
 import { socketCache } from "./utils";
+
+import type {
+  SocketOptions as IOSocketOptions,
+  ManagerOptions,
+  Socket,
+} from "socket.io-client";
 
 export const useSocket = (options: IUseSocketOptions): IUseSocketReturn => {
   const { url, autoConnect = true, ...socketOptions } = options;

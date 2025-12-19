@@ -1,6 +1,7 @@
 import React from "react";
 
-import { type Location, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import type { Location } from "react-router-dom";
 
 import { LockOutlined, LoginOutlined, UserOutlined } from "@ant-design/icons";
 import { Alert, Button, Form, Input, Typography } from "antd";

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 
 import { Typography } from "antd";
 
-import VirtualTableComponent, { type IVirtualColumn } from "@/components/VirtualTable";
+import VirtualTableComponent from "@/components/VirtualTable";
+import type { IVirtualColumn } from "@/components/VirtualTable";
 
 const { Title } = Typography;
 
