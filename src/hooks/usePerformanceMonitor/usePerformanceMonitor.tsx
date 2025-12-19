@@ -1,4 +1,12 @@
-import { Profiler, useEffect, useRef, type ProfilerOnRenderCallback, type ReactNode } from "react";
+import React, {
+  Profiler,
+  useEffect,
+  useRef,
+  type ProfilerOnRenderCallback,
+  type ReactNode,
+} from "react";
+
+import usePagePerformanceMonitor from "./usePerformanceMonitorHook";
 
 interface IPerformanceMetrics {
   id: string;
@@ -28,10 +36,21 @@ const PerformanceMonitor: React.FC<IPerformanceMonitorProps> = ({
   enableConsoleLog = true,
 }) => {
   const hasLoggedRef = useRef(false);
+  const hasLoggedPagePerfRef = useRef(false);
+
+  // 页面级 Performance API 监控（DNS/TCP/FCP 等）
+  const { logPagePerformance } = usePagePerformanceMonitor();
+
+  const ProfilerWrapper = Profiler as unknown as React.FC<{
+    id: string;
+    onRender: ProfilerOnRenderCallback;
+    children: ReactNode;
+  }>;
 
   useEffect(() => {
     // 路由切换时允许重新记录一次
     hasLoggedRef.current = false;
+    hasLoggedPagePerfRef.current = false;
   }, [id]);
 
   // ProfilerOnRenderCallback需要6个参数，这是React API的要求
@@ -94,15 +113,21 @@ const PerformanceMonitor: React.FC<IPerformanceMonitorProps> = ({
         );
       }
 
+      // 在标签下追加一次“页面性能指标”（DNS/TCP/FCP 等），保证每个页面只调用一次
+      if (!hasLoggedPagePerfRef.current) {
+        hasLoggedPagePerfRef.current = true;
+        logPagePerformance();
+      }
+
       hasLoggedRef.current = true;
     }
   };
   /* eslint-enable max-params */
 
   return (
-    <Profiler id={id} onRender={handleRender}>
+    <ProfilerWrapper id={id} onRender={handleRender}>
       {children}
-    </Profiler>
+    </ProfilerWrapper>
   );
 };
 
