@@ -3,7 +3,7 @@
   width: 100%;
   height: 100vh;
   max-height: 100vh;
-  background: #f0f2f5;
+  background: var(--color-bg-secondary);
   overflow: hidden;
 
   // Ant Design Layout 样式覆盖
@@ -17,8 +17,8 @@
     position: relative;
     z-index: 10;
     height: 100%;
-    background: #fff;
-    box-shadow: 2px 0 12px rgb(0 0 0 / 0.04);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
   }
 
@@ -33,7 +33,7 @@
     flex-shrink: 0;
     height: 100%;
     box-sizing: border-box;
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid var(--color-border-light);
     transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
 
     &-header {
@@ -160,21 +160,21 @@
 
       .ant-input {
         border-radius: 6px;
-        border-color: #e0e0e0;
+        border-color: var(--color-border);
         transition: all 0.2s;
 
         &:hover {
-          border-color: #237ffa;
+          border-color: var(--color-primary);
         }
 
         &:focus {
-          border-color: #237ffa;
+          border-color: var(--color-primary);
           box-shadow: 0 0 0 2px rgb(35 127 250 / 0.1);
         }
       }
 
       .anticon-search {
-        color: #8c8c8c;
+        color: var(--color-text-tertiary);
       }
     }
 
@@ -192,13 +192,13 @@
         width: 40px;
         height: 40px;
         font-size: 18px;
-        color: #595959;
+        color: var(--color-text-secondary);
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
 
         &:hover {
-          color: #237ffa;
+          color: var(--color-primary);
           background: rgb(35 127 250 / 0.08);
         }
 
@@ -212,7 +212,7 @@
       flex-shrink: 0;
       height: 1px;
       margin: 0 16px 4px;
-      background: #f0f0f0;
+      background: var(--color-border-light);
     }
 
     &-search-results {
@@ -225,9 +225,9 @@
         flex-shrink: 0;
         padding: 8px 16px;
         font-size: 12px;
-        color: #8c8c8c;
-        background: #fafafa;
-        border-bottom: 1px solid #f0f0f0;
+        color: var(--color-text-tertiary);
+        background: var(--color-bg-secondary);
+        border-bottom: 1px solid var(--color-border-light);
       }
 
       &-list {
@@ -250,11 +250,11 @@
         }
 
         &::-webkit-scrollbar-thumb {
-          background: rgb(0 0 0 / 0.1);
+          background: var(--color-text-disabled);
           border-radius: 2px;
 
           &:hover {
-            background: rgb(0 0 0 / 0.2);
+            background: var(--color-text-tertiary);
           }
         }
       }
@@ -273,7 +273,7 @@
 
       &-selected {
         font-weight: 500;
-        color: #237ffa;
+        color: var(--color-primary);
         background: linear-gradient(90deg, rgb(35 127 250 / 0.12) 0%, rgb(35 127 250 / 0.06) 100%);
       }
     }
@@ -315,11 +315,11 @@
       }
 
       &::-webkit-scrollbar-thumb {
-        background: rgb(0 0 0 / 0.1);
+        background: var(--color-text-disabled);
         border-radius: 2px;
 
         &:hover {
-          background: rgb(0 0 0 / 0.2);
+          background: var(--color-text-tertiary);
         }
       }
 
@@ -342,7 +342,7 @@
         margin-inline: 0;
 
         &:hover {
-          color: #237ffa;
+          color: var(--color-primary);
           background: rgb(35 127 250 / 0.08);
         }
       }
@@ -352,7 +352,7 @@
         &.ant-menu-item-selected {
           position: relative;
           font-weight: 500;
-          color: #237ffa;
+          color: var(--color-primary);
           background: linear-gradient(90deg, rgb(35 127 250 / 0.12) 0%, rgb(35 127 250 / 0.06) 100%);
 
           &::before {
@@ -361,7 +361,7 @@
             left: 0;
             width: 3px;
             height: 20px;
-            background: #237ffa;
+            background: var(--color-primary);
             border-radius: 0 2px 2px 0;
             transform: translateY(-50%);
             content: "";
@@ -380,13 +380,13 @@
         }
 
         &.ant-menu-submenu-open > .ant-menu-submenu-title {
-          color: #237ffa;
+          color: var(--color-primary);
         }
 
         .ant-menu {
           margin: 4px 0;
           padding: 4px 0;
-          background: rgb(0 0 0 / 0.02);
+          background: var(--color-bg-tertiary);
         }
 
         .ant-menu-item {
@@ -397,13 +397,13 @@
           line-height: 40px;
 
           &:hover {
-            color: #237ffa;
+            color: var(--color-primary);
             background: rgb(35 127 250 / 0.08);
           }
 
           &.ant-menu-item-selected {
             font-weight: 500;
-            color: #237ffa;
+            color: var(--color-primary);
             background: rgb(35 127 250 / 0.12);
 
             &::before {
@@ -436,9 +436,9 @@
     width: 100%;
     height: 48px;
     padding: 0;
-    border-bottom: 1px solid #f0f0f0;
-    background: #fff;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 0.02);
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+    box-shadow: var(--shadow-sm);
 
     &-content {
       display: flex;
@@ -474,7 +474,7 @@
       width: 36px;
       height: 36px;
       font-size: 18px;
-      color: #595959;
+      color: var(--color-text-secondary);
       border-radius: 8px;
       transition: all 0.2s;
       flex-shrink: 0;
@@ -482,12 +482,12 @@
       cursor: pointer;
 
       &:hover {
-        color: #237ffa;
-        background: #f5f5f5;
+        color: var(--color-primary);
+        background: var(--color-bg-tertiary);
       }
 
       &:active {
-        background: #e8e8e8;
+        background: var(--color-border-light);
       }
     }
 
@@ -509,7 +509,7 @@
       transition: all 0.2s;
 
       &:hover {
-        background: #f5f5f5;
+        background: var(--color-bg-tertiary);
       }
 
       img {
@@ -528,7 +528,7 @@
     flex: 1;
     width: 100%;
     height: calc(100vh - 48px - 40px);
-    background: #f0f2f5;
+    background: var(--color-bg-secondary);
     max-height: calc(100vh - 48px - 40px);
     box-sizing: border-box;
     overflow: hidden;
@@ -538,8 +538,8 @@
       height: 100%;
       max-height: 100%;
       box-sizing: border-box;
-      background: #fff;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.04);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-md);
       overflow: hidden auto;
 
       &::-webkit-scrollbar {
@@ -551,11 +551,11 @@
       }
 
       &::-webkit-scrollbar-thumb {
-        background: rgb(0 0 0 / 0.15);
+        background: var(--color-text-secondary);
         border-radius: 4px;
 
         &:hover {
-          background: rgb(0 0 0 / 0.25);
+          background: var(--color-text-primary);
         }
       }
     }
