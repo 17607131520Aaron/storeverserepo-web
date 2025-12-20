@@ -1,3 +1,5 @@
+import { storeErrorLog } from "./errorLogStorage";
+
 type ReportSender = (payload: INormalizedPayload) => Promise<void> | void;
 
 export type ClientIssueType = "runtime-error" | "unhandled-rejection" | "react-render" | "interaction-error";
@@ -15,16 +17,21 @@ export interface IClientIssuePayload {
   extra?: Record<string, unknown>;
 }
 
-interface INormalizedPayload extends IClientIssuePayload {
+export interface INormalizedPayload extends IClientIssuePayload {
   url: string;
   userAgent: string;
   timestamp: number;
 }
 
 let hasInitGlobalListener = false;
-let currentReportSender: ReportSender = (normalized) => {
+let currentReportSender: ReportSender = async (normalized) => {
+  // 先存储到 IndexedDB
+  await storeErrorLog(normalized);
+
+  // 控制台输出（开发环境）
   console.log(normalized, "normalized上报错误");
 
+  // 后期可以替换为实际的 HTTP 上报
   // await fetch("/mock-api/client-error-report", {
   //   method: "POST",
   //   headers: {

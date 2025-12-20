@@ -8,6 +8,7 @@ import type { Table } from "dexie";
 const DB_NAME = "storeverse-app";
 const STORE_NAME = "project_info";
 const PERF_STORE_NAME = "performance_metrics";
+const ERROR_LOG_STORE_NAME = "error_logs";
 
 export interface IProjectInfoRecord {
   key: string;
@@ -21,9 +22,16 @@ export interface IPerformanceMetricRecord {
   payload: unknown;
 }
 
+export interface IErrorLogRecord {
+  id?: number;
+  createdAt: number;
+  payload: unknown;
+}
+
 class ProjectInfoDB extends Dexie {
   public projectInfo!: Table<IProjectInfoRecord, string>;
   public performanceMetrics!: Table<IPerformanceMetricRecord, number>;
+  public errorLogs!: Table<IErrorLogRecord, number>;
 
   constructor() {
     super(DB_NAME);
@@ -36,9 +44,16 @@ class ProjectInfoDB extends Dexie {
       [STORE_NAME]: "&key",
       [PERF_STORE_NAME]: "++id,createdAt",
     });
+    // 版本 3：增加错误日志表
+    this.version(3).stores({
+      [STORE_NAME]: "&key",
+      [PERF_STORE_NAME]: "++id,createdAt",
+      [ERROR_LOG_STORE_NAME]: "++id,createdAt",
+    });
 
     this.projectInfo = this.table(STORE_NAME);
     this.performanceMetrics = this.table(PERF_STORE_NAME);
+    this.errorLogs = this.table(ERROR_LOG_STORE_NAME);
   }
 }
 
@@ -111,5 +126,53 @@ export const clearPerformanceMetrics = async (): Promise<void> => {
     await db.performanceMetrics.clear();
   } catch (error) {
     console.warn("清空性能指标失败（已忽略）：", error);
+  }
+};
+
+// 错误日志相关
+
+export const saveErrorLog = async (payload: unknown): Promise<void> => {
+  try {
+    const count = await db.errorLogs.count();
+    // 限制最多保存 1000 条错误日志，超过后清空旧数据
+    if (count >= 1000) {
+      await db.errorLogs.clear();
+    }
+    const record: IErrorLogRecord = {
+      createdAt: Date.now(),
+      payload,
+    };
+    await db.errorLogs.add(record);
+  } catch (error) {
+    console.warn("保存错误日志到 IndexedDB 失败（已忽略）：", error);
+  }
+};
+
+export const getErrorLogs = async (limit?: number): Promise<IErrorLogRecord[]> => {
+  try {
+    if (limit) {
+      return await db.errorLogs.orderBy("createdAt").reverse().limit(limit).toArray();
+    }
+    return await db.errorLogs.orderBy("createdAt").reverse().toArray();
+  } catch (error) {
+    console.warn("读取错误日志失败（已忽略）：", error);
+    return [];
+  }
+};
+
+export const clearErrorLogs = async (): Promise<void> => {
+  try {
+    await db.errorLogs.clear();
+  } catch (error) {
+    console.warn("清空错误日志失败（已忽略）：", error);
+  }
+};
+
+export const getErrorLogsCount = async (): Promise<number> => {
+  try {
+    return await db.errorLogs.count();
+  } catch (error) {
+    console.warn("获取错误日志数量失败（已忽略）：", error);
+    return 0;
   }
 };
