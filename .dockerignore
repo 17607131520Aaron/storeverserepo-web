@@ -1,6 +1,6 @@
 # 依赖
 node_modules
-pnpm-lock.yaml
+# 注意：pnpm-lock.yaml 需要包含在构建上下文中，用于安装依赖
 
 # 构建产物
 dist

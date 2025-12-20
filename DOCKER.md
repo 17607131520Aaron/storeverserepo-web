@@ -211,3 +211,94 @@ A: 使用 `docker ps` 或 `docker-compose --profile <env> ps`。
 ### Q: 如何进入容器？
 
 A: 使用 `docker exec -it <container-name> sh`。
+
+### Q: 构建时出现网络超时错误（failed to fetch oauth token）？
+
+A: 这通常是因为无法连接到 Docker Hub。可以通过以下方式解决：
+
+#### 方案一：配置 Docker 镜像加速器（推荐）
+
+**macOS/Windows (Docker Desktop):**
+
+1. 打开 Docker Desktop
+2. 进入 Settings → Docker Engine
+3. 添加以下配置（以阿里云镜像为例）：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ]
+}
+```
+
+4. 点击 "Apply & Restart"
+
+**Linux:**
+
+编辑 `/etc/docker/daemon.json`（如果不存在则创建）：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ]
+}
+```
+
+然后重启 Docker 服务：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+**常用镜像加速器地址：**
+
+- 中科大镜像: `https://docker.mirrors.ustc.edu.cn`
+- 网易镜像: `https://hub-mirror.c.163.com`
+- 百度云镜像: `https://mirror.baidubce.com`
+- 阿里云镜像: `https://<你的ID>.mirror.aliyuncs.com`（需要登录阿里云获取）
+
+#### 方案二：手动拉取基础镜像
+
+在构建前先手动拉取基础镜像：
+
+```bash
+docker pull node:24-alpine
+docker pull nginx:alpine
+```
+
+然后再执行构建命令。
+
+#### 方案三：使用代理
+
+如果已配置代理，可以在构建时设置代理环境变量：
+
+```bash
+export HTTP_PROXY=http://proxy.example.com:8080
+export HTTPS_PROXY=http://proxy.example.com:8080
+./scripts/docker-deploy.sh test
+```
+
+#### 方案四：重试构建
+
+网络问题可能是临时的，可以稍后重试：
+
+```bash
+./scripts/docker-deploy.sh test
+```
+
+#### 验证镜像加速器配置
+
+配置完成后，可以通过以下命令验证：
+
+```bash
+docker info | grep -A 10 "Registry Mirrors"
+```
+
+如果看到配置的镜像地址，说明配置成功。

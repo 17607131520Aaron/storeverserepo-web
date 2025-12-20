@@ -240,6 +240,9 @@ build_and_deploy() {
     # 构建新镜像（使用 docker-compose build，确保与 docker-compose.yml 配置一致）
     echo -e "${YELLOW}构建新镜像: ${CURRENT_IMAGE_TAG}${NC}"
 
+    # 保存时间戳镜像名称（用于后续打标签）
+    TIMESTAMP_IMAGE_NAME="${IMAGE_NAME}"
+
     # 设置 IMAGE_NAME 环境变量，让 docker-compose 使用指定的镜像名称
     export IMAGE_NAME="${CURRENT_IMAGE_TAG}"
 
@@ -248,13 +251,13 @@ build_and_deploy() {
 
     # 同时打上时间戳标签（用于备份和追踪）
     if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${CURRENT_IMAGE_TAG}$"; then
-        docker tag "${CURRENT_IMAGE_TAG}" "${IMAGE_NAME}" 2>/dev/null || true
+        docker tag "${CURRENT_IMAGE_TAG}" "${TIMESTAMP_IMAGE_NAME}" 2>/dev/null || true
         docker tag "${CURRENT_IMAGE_TAG}" "${PROJECT_ID}:${ENV}-latest" 2>/dev/null || true
     fi
 
     echo -e "${GREEN}镜像构建完成！${NC}"
     echo -e "${BLUE}镜像标签:${NC}"
-    echo -e "  - ${IMAGE_NAME}"
+    echo -e "  - ${TIMESTAMP_IMAGE_NAME}"
     echo -e "  - ${CURRENT_IMAGE_TAG}"
     echo -e "  - ${PROJECT_ID}:${ENV}-latest"
 
