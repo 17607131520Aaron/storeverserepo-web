@@ -4,12 +4,14 @@
 #
 # 使用方法:
 #   简化用法（推荐）:
-#     ./scripts/docker-deploy.sh dev   # 自动执行构建、备份、部署
+#     ./scripts/docker-deploy.sh dev   # 自动执行构建、备份、部署（dev 等同于 test）
 #     ./scripts/docker-deploy.sh test  # 自动执行构建、备份、部署
 #     ./scripts/docker-deploy.sh prod  # 自动执行构建、备份、部署
 #
 #   完整用法:
 #     ./scripts/docker-deploy.sh [dev|test|prod] [build|up|down|restart|logs|stop|start|backup]
+#
+#   注意: dev 和 test 环境指向同一个配置（测试环境）
 
 set -e
 
@@ -22,10 +24,6 @@ NC='\033[0m' # No Color
 
 # 获取项目ID（从package.json读取）
 PROJECT_ID=$(node -p "require('./package.json').name" 2>/dev/null || echo "storeverserepo-web")
-# 备份目录
-BACKUP_DIR="./docker-backup"
-# 确保备份目录存在
-mkdir -p "$BACKUP_DIR"
 
 # 默认值
 # 如果只提供一个参数，默认为环境，操作自动为 build（构建并部署）
@@ -74,26 +72,25 @@ if [[ ! "$ACTION" =~ ^(build|up|down|restart|logs|stop|start|backup)$ ]]; then
 fi
 
 # 根据环境选择对应的配置
+# 注意: dev 和 test 指向同一个测试环境配置
 case $ENV in
-    dev)
-        PROFILE="dev"
-        SERVICE="web-dev"
-        CONTAINER_NAME="storeverserepo-web-dev"
-        PORT="8080"
-        BUILD_MODE="dev"
-        ;;
-    test)
+    dev|test)
+        # dev 和 test 都使用测试环境配置
         PROFILE="test"
         SERVICE="web-test"
         CONTAINER_NAME="storeverserepo-web-test"
-        PORT="8081"
+        PORT="8001"
         BUILD_MODE="test"
+        # 如果输入的是 dev，将 ENV 改为 test 以保持一致性
+        if [ "$ENV" = "dev" ]; then
+            ENV="test"
+        fi
         ;;
     prod)
         PROFILE="prod"
         SERVICE="web-prod"
         CONTAINER_NAME="storeverserepo-web-prod"
-        PORT="80"
+        PORT="8000"
         BUILD_MODE="prod"
         ;;
 esac
@@ -104,6 +101,10 @@ TIMESTAMP=$(date +"%Y%m%d%H%M%S")
 IMAGE_NAME="${PROJECT_ID}-${ENV}-${TIMESTAMP}"
 # 当前使用的镜像标签（用于备份）
 CURRENT_IMAGE_TAG="${PROJECT_ID}:${ENV}"
+# 备份目录（按环境分类）
+BACKUP_DIR="./deploy-backup/${ENV}"
+# 确保备份目录存在
+mkdir -p "$BACKUP_DIR"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}项目ID: ${PROJECT_ID}${NC}"
@@ -118,6 +119,51 @@ echo -e "${GREEN}端口: ${PORT}${NC}"
 echo -e "${GREEN}镜像名称: ${IMAGE_NAME}${NC}"
 echo -e "${GREEN}备份目录: ${BACKUP_DIR}${NC}"
 echo -e "${GREEN}========================================${NC}"
+
+# 清理无用的时间戳镜像函数
+cleanup_old_images() {
+    echo -e "${YELLOW}清理无用的时间戳镜像...${NC}"
+
+    # 获取所有时间戳镜像（格式：项目id-环境-时间戳），按时间倒序排列
+    local old_images=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${PROJECT_ID}-${ENV}-[0-9]\{14\}$" | sort -r)
+
+    # 如果没有时间戳镜像，直接返回
+    if [ -z "$old_images" ]; then
+        echo -e "${BLUE}没有需要清理的时间戳镜像${NC}"
+        return
+    fi
+
+    # 保留最近5个时间戳镜像，删除其他的
+    local count=0
+    local deleted_count=0
+    local skipped_count=0
+
+    while IFS= read -r image; do
+        if [ -n "$image" ]; then
+            count=$((count + 1))
+            if [ $count -gt 5 ]; then
+                # 尝试删除镜像，如果失败说明可能正在使用或被其他标签引用
+                echo -e "${BLUE}尝试删除旧镜像: ${image}${NC}"
+                if docker rmi "$image" 2>/dev/null; then
+                    deleted_count=$((deleted_count + 1))
+                else
+                    skipped_count=$((skipped_count + 1))
+                    echo -e "${YELLOW}跳过镜像 ${image}（可能正在使用或被其他标签引用）${NC}"
+                fi
+            fi
+        fi
+    done <<< "$old_images"
+
+    if [ $deleted_count -gt 0 ]; then
+        echo -e "${GREEN}已清理 ${deleted_count} 个旧镜像${NC}"
+    fi
+    if [ $skipped_count -gt 0 ]; then
+        echo -e "${YELLOW}跳过 ${skipped_count} 个无法删除的镜像${NC}"
+    fi
+    if [ $deleted_count -eq 0 ] && [ $skipped_count -eq 0 ]; then
+        echo -e "${BLUE}无需清理的镜像${NC}"
+    fi
+}
 
 # 备份镜像函数
 backup_image() {
@@ -145,6 +191,10 @@ backup_image() {
             # 清理超过30天的备份文件
             find "$BACKUP_DIR" -name "${PROJECT_ID}-${ENV}-*.tar.gz" -mtime +30 -delete 2>/dev/null || true
             echo -e "${BLUE}已清理30天前的备份文件${NC}"
+
+            # 统计备份文件数量
+            BACKUP_COUNT=$(find "$BACKUP_DIR" -name "${PROJECT_ID}-${ENV}-*.tar.gz" 2>/dev/null | wc -l | tr -d ' ')
+            echo -e "${BLUE}当前备份文件数量: ${BACKUP_COUNT}${NC}"
         else
             echo -e "${RED}备份失败: 无法保存镜像 ${old_image}${NC}"
         fi
@@ -157,8 +207,8 @@ backup_image() {
 build_and_deploy() {
     echo -e "${YELLOW}开始构建 ${ENV} 环境镜像...${NC}"
 
-    # 检查是否有正在运行的容器
-    if docker ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+    # 检查是否有正在运行的容器（通过 docker-compose）
+    if docker-compose --profile $PROFILE ps --services --filter "status=running" 2>/dev/null | grep -q "^${SERVICE}$"; then
         echo -e "${YELLOW}检测到正在运行的容器: ${CONTAINER_NAME}${NC}"
 
         # 获取当前容器使用的镜像
@@ -170,20 +220,37 @@ build_and_deploy() {
             backup_image "$CURRENT_IMAGE"
         fi
 
-        # 停止并删除旧容器
+        # 停止并删除旧容器（使用 docker-compose）
         echo -e "${YELLOW}停止旧容器...${NC}"
-        docker stop "${CONTAINER_NAME}" 2>/dev/null || true
-        docker rm "${CONTAINER_NAME}" 2>/dev/null || true
+        docker-compose --profile $PROFILE down 2>/dev/null || true
+    else
+        # 如果容器不是通过 docker-compose 创建的，尝试直接停止
+        if docker ps --format "{{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+            echo -e "${YELLOW}检测到非 docker-compose 管理的容器: ${CONTAINER_NAME}${NC}"
+            CURRENT_IMAGE=$(docker inspect --format='{{.Config.Image}}' "${CONTAINER_NAME}" 2>/dev/null || echo "")
+            if [ -n "$CURRENT_IMAGE" ] && [ "$CURRENT_IMAGE" != "<no value>" ]; then
+                echo -e "${BLUE}当前使用的镜像: ${CURRENT_IMAGE}${NC}"
+                backup_image "$CURRENT_IMAGE"
+            fi
+            docker stop "${CONTAINER_NAME}" 2>/dev/null || true
+            docker rm "${CONTAINER_NAME}" 2>/dev/null || true
+        fi
     fi
 
-    # 构建新镜像（使用docker build直接构建，指定镜像名称）
-    echo -e "${YELLOW}构建新镜像: ${IMAGE_NAME}${NC}"
-    docker build \
-        --build-arg BUILD_MODE=$BUILD_MODE \
-        --tag "${IMAGE_NAME}" \
-        --tag "${CURRENT_IMAGE_TAG}" \
-        --tag "${PROJECT_ID}:${ENV}-latest" \
-        -f Dockerfile .
+    # 构建新镜像（使用 docker-compose build，确保与 docker-compose.yml 配置一致）
+    echo -e "${YELLOW}构建新镜像: ${CURRENT_IMAGE_TAG}${NC}"
+
+    # 设置 IMAGE_NAME 环境变量，让 docker-compose 使用指定的镜像名称
+    export IMAGE_NAME="${CURRENT_IMAGE_TAG}"
+
+    # 使用 docker-compose build 构建镜像
+    docker-compose --profile $PROFILE build --build-arg BUILD_MODE=$BUILD_MODE
+
+    # 同时打上时间戳标签（用于备份和追踪）
+    if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${CURRENT_IMAGE_TAG}$"; then
+        docker tag "${CURRENT_IMAGE_TAG}" "${IMAGE_NAME}" 2>/dev/null || true
+        docker tag "${CURRENT_IMAGE_TAG}" "${PROJECT_ID}:${ENV}-latest" 2>/dev/null || true
+    fi
 
     echo -e "${GREEN}镜像构建完成！${NC}"
     echo -e "${BLUE}镜像标签:${NC}"
@@ -191,33 +258,16 @@ build_and_deploy() {
     echo -e "  - ${CURRENT_IMAGE_TAG}"
     echo -e "  - ${PROJECT_ID}:${ENV}-latest"
 
-    # 自动启动新镜像（使用docker run直接启动，确保使用新镜像）
+    # 使用 docker-compose 启动容器（确保容器管理一致性）
     echo -e "${YELLOW}启动新容器...${NC}"
+    docker-compose --profile $PROFILE up -d
 
-    # 根据环境设置端口映射
-    case $ENV in
-        dev)
-            PORT_MAP="8080:80"
-            ;;
-        test)
-            PORT_MAP="8081:80"
-            ;;
-        prod)
-            PORT_MAP="80:80"
-            ;;
-    esac
-
-    # 使用docker run启动容器
-    docker run -d \
-        --name "${CONTAINER_NAME}" \
-        --restart unless-stopped \
-        -p "${PORT_MAP}" \
-        -e NODE_ENV="${ENV}" \
-        "${IMAGE_NAME}"
+    # 清理无用的旧镜像（保留最近5个时间戳镜像）
+    cleanup_old_images
 
     echo -e "${GREEN}========================================${NC}"
     echo -e "${GREEN}构建并部署完成！${NC}"
-    echo -e "${GREEN}镜像名称: ${IMAGE_NAME}${NC}"
+    echo -e "${GREEN}镜像名称: ${CURRENT_IMAGE_TAG}${NC}"
     echo -e "${GREEN}容器名称: ${CONTAINER_NAME}${NC}"
     echo -e "${GREEN}访问地址: http://localhost:${PORT}${NC}"
     echo -e "${GREEN}========================================${NC}"
