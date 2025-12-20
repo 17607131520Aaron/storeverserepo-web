@@ -251,11 +251,19 @@ const BarcodeManage: React.FC = () => {
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            paddingTop: 4,
-                            paddingBottom: 4,
+                            padding: "12px",
+                            backgroundColor: "#ffffff",
+                            borderRadius: 4,
                           }}
                         >
-                          <QRCodeCanvas size={96} value={item.value} />
+                          <QRCodeCanvas
+                            includeMargin
+                            bgColor="#ffffff"
+                            fgColor="#000000"
+                            level="H"
+                            size={120}
+                            value={item.value}
+                          />
                         </div>
                       ) : (
                         <div
@@ -263,16 +271,26 @@ const BarcodeManage: React.FC = () => {
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
+                            padding: "12px 8px",
+                            backgroundColor: "#ffffff",
+                            borderRadius: 4,
+                            minHeight: 100,
                           }}
                         >
                           <Barcode
                             displayValue
-                            fontSize={12}
+                            flat
+                            background="#ffffff"
+                            fontSize={16}
                             format={item.type}
-                            height={60}
-                            margin={6}
+                            height={90}
+                            lineColor="#000000"
+                            margin={12}
+                            textAlign="center"
+                            textMargin={6}
+                            textPosition="bottom"
                             value={item.value}
-                            width={1.8}
+                            width={3}
                           />
                         </div>
                       )}
