@@ -151,7 +151,7 @@ pnpm dev:dev
 # 生产环境
 pnpm dev:prod
 
-# 默认访问地址: http://localhost:8000
+# 默认访问地址: http://localhost:8000 (测试环境)
 ```
 
 ### 构建生产版本
@@ -405,9 +405,11 @@ import { util } from "@/utils/util";
 
 | 部署方式         | 适用场景                   | 端口配置                              | 文档                     |
 | ---------------- | -------------------------- | ------------------------------------- | ------------------------ |
-| **Docker**       | 容器化部署，推荐生产环境   | dev: 8080<br>test: 8081<br>prod: 80   | [DOCKER.md](./DOCKER.md) |
+| **Docker**       | 容器化部署，推荐生产环境   | test: 8001<br>prod: 8000              | [DOCKER.md](./DOCKER.md) |
 | **Jenkins**      | 传统服务器部署，CI/CD 集成 | dev: 3000<br>test: 3001<br>prod: 3002 | 见下方                   |
 | **GitHub Pages** | 静态站点托管               | -                                     | 见下方                   |
+
+> **注意**: Docker 部署中，`dev` 和 `test` 环境指向同一个测试环境配置（端口 8001），只有 `test` 和 `prod` 两个独立环境。
 
 ### Docker 部署（推荐）
 
@@ -416,23 +418,61 @@ import { util } from "@/utils/util";
 #### 快速部署
 
 ```bash
-# 测试环境
+# 测试环境（dev 和 test 都使用此配置）
 ./scripts/docker-deploy.sh test
-
-# 开发环境
-./scripts/docker-deploy.sh dev
+# 或
+./scripts/docker-deploy.sh dev   # dev 等同于 test
 
 # 生产环境
 ./scripts/docker-deploy.sh prod
 ```
 
+#### 可用操作
+
+```bash
+# 构建并部署（默认操作）
+./scripts/docker-deploy.sh test build
+# 或简写
+./scripts/docker-deploy.sh test
+
+# 仅启动容器
+./scripts/docker-deploy.sh test up
+
+# 停止并删除容器
+./scripts/docker-deploy.sh test down
+
+# 重启容器
+./scripts/docker-deploy.sh test restart
+
+# 查看日志
+./scripts/docker-deploy.sh test logs
+
+# 停止容器（不删除）
+./scripts/docker-deploy.sh test stop
+
+# 启动已存在的容器
+./scripts/docker-deploy.sh test start
+
+# 手动备份镜像
+./scripts/docker-deploy.sh test backup
+```
+
 #### 特性
 
-- ✅ **多环境支持**: dev、test、prod 三个环境
-- ✅ **自动镜像命名**: 格式为 `项目id-环境-时间戳`
-- ✅ **自动备份**: 构建前自动备份旧镜像到 `./docker-backup/` 目录
+- ✅ **多环境支持**: test（dev 等同于 test）、prod 两个环境
+- ✅ **自动镜像命名**: 格式为 `项目id-环境-时间戳`，同时打上环境标签和 latest 标签
+- ✅ **自动备份**: 构建前自动备份旧镜像到 `./deploy-backup/{环境}/` 目录（按环境分类）
+- ✅ **自动清理**: 自动清理 30 天前的备份文件和超过 5 个的时间戳镜像
 - ✅ **自动启动**: 构建完成后自动停止旧容器并启动新容器
+- ✅ **统一管理**: 统一使用 docker-compose 管理容器，确保配置一致性
 - ✅ **Nginx 配置**: 完整的 Nginx 配置，支持 SPA 路由、Gzip 压缩、API 代理等
+
+#### 访问地址
+
+部署完成后，可通过以下地址访问：
+
+- **测试环境**: `http://localhost:8001`
+- **生产环境**: `http://localhost:8000`
 
 #### 详细文档
 
@@ -496,6 +536,8 @@ import { util } from "@/utils/util";
 - **dev**: `./deploy/dev` (端口: 3000)
 - **test**: `./deploy/test` (端口: 3001)
 - **prod**: `./deploy/prod` (端口: 3002)
+
+> **注意**: Jenkins 部署方式中，`dev`、`test`、`prod` 是三个独立的环境，与 Docker 部署不同。
 
 > 💡 **提示**: 在 macOS 上，脚本会自动检测并使用本地部署目录，避免需要 sudo 权限。部署完成后，需要配置 Nginx 来服务这些目录，脚本会提供详细的配置建议。
 
