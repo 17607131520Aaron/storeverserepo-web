@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import("@/pages/Login"));
 // Dashboard 模块
 const DashboardOverview = lazy(() => import("@/pages/Dashboard/Overview"));
 const DashboardAnalysis = lazy(() => import("@/pages/Dashboard/Analysis"));
+const DashboardMap3D = lazy(() => import("@/pages/Dashboard/Map3D"));
 
 // Documents 模块
 const DocumentsList = lazy(() => import("@/pages/Documents/List"));
@@ -57,6 +58,10 @@ const router: DataRouter = createHashRouter([
       {
         path: "/dashboard/analysis",
         element: <DashboardAnalysis />,
+      },
+      {
+        path: "/dashboard/map3d",
+        element: <DashboardMap3D />,
       },
       // Documents 路由
       {

@@ -13,21 +13,7 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import { Card, Col, Row, Statistic, Typography } from "antd";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import ReactECharts from "echarts-for-react";
 
 const { Title, Text } = Typography;
 
@@ -39,16 +25,6 @@ interface IQuickAction {
   key: string;
   path: string;
   title: string;
-}
-
-interface ITooltipProps {
-  active?: boolean;
-  label?: string;
-  payload?: Array<{
-    color: string;
-    name: string;
-    value: number;
-  }>;
 }
 
 const quickActions: IQuickAction[] = [
@@ -114,82 +90,66 @@ const mockStats = {
   documentGrowth: 12.5,
   memberGrowth: 8.3,
   systemUptime: 127,
-  todayBarcodes: 156,
-  totalDocuments: 1234,
-  totalTeamMembers: 48,
+  todayBarcodes: 1248,
+  totalDocuments: 8562,
+  totalTeamMembers: 156,
 };
 
-// 最近7天的数据趋势
-const last7DaysData = [
-  { 访问: 320, name: "周一", 条码: 45, 文档: 120 },
-  { 访问: 380, name: "周二", 条码: 52, 文档: 132 },
-  { 访问: 410, name: "周三", 条码: 48, 文档: 145 },
-  { 访问: 450, name: "周四", 条码: 61, 文档: 158 },
-  { 访问: 420, name: "周五", 条码: 55, 文档: 142 },
-  { 访问: 360, name: "周六", 条码: 42, 文档: 128 },
-  { 访问: 390, name: "周日", 条码: 58, 文档: 156 },
+// 最近30天的数据趋势
+const last30DaysData = [
+  { 访问: 820, name: "1", 条码: 125, 文档: 320 },
+  { 访问: 880, name: "2", 条码: 132, 文档: 342 },
+  { 访问: 910, name: "3", 条码: 128, 文档: 365 },
+  { 访问: 950, name: "4", 条码: 141, 文档: 378 },
+  { 访问: 920, name: "5", 条码: 135, 文档: 362 },
+  { 访问: 860, name: "6", 条码: 122, 文档: 348 },
+  { 访问: 890, name: "7", 条码: 138, 文档: 376 },
+  { 访问: 1020, name: "8", 条码: 152, 文档: 395 },
+  { 访问: 1080, name: "9", 条码: 168, 文档: 412 },
+  { 访问: 1050, name: "10", 条码: 145, 文档: 388 },
+  { 访问: 1120, name: "11", 条码: 175, 文档: 425 },
+  { 访问: 1150, name: "12", 条码: 182, 文档: 438 },
+  { 访问: 1180, name: "13", 条码: 195, 文档: 452 },
+  { 访问: 1200, name: "14", 条码: 188, 文档: 445 },
+  { 访问: 1160, name: "15", 条码: 178, 文档: 432 },
+  { 访问: 1220, name: "16", 条码: 205, 文档: 468 },
+  { 访问: 1250, name: "17", 条码: 218, 文档: 485 },
+  { 访问: 1280, name: "18", 条码: 225, 文档: 498 },
+  { 访问: 1320, name: "19", 条码: 238, 文档: 512 },
+  { 访问: 1350, name: "20", 条码: 245, 文档: 528 },
+  { 访问: 1380, name: "21", 条码: 252, 文档: 542 },
+  { 访问: 1420, name: "2天", 条码: 268, 文档: 558 },
+  { 访问: 1450, name: "23", 条码: 275, 文档: 572 },
+  { 访问: 1480, name: "24", 条码: 282, 文档: 588 },
+  { 访问: 1520, name: "25", 条码: 295, 文档: 605 },
+  { 访问: 1550, name: "26", 条码: 308, 文档: 622 },
+  { 访问: 1580, name: "27", 条码: 315, 文档: 638 },
+  { 访问: 1620, name: "28", 条码: 328, 文档: 655 },
+  { 访问: 1650, name: "29", 条码: 335, 文档: 672 },
+  { 访问: 1680, name: "30", 条码: 348, 文档: 688 },
 ];
 
 // 文档分类数据（优化配色）
 const documentCategoryData = [
-  { color: "#1890ff", gradient: ["#1890ff", "#096dd9"], name: "技术文档", value: 420 },
-  { color: "#52c41a", gradient: ["#52c41a", "#389e0d"], name: "业务文档", value: 380 },
-  { color: "#fa8c16", gradient: ["#fa8c16", "#d46b08"], name: "设计文档", value: 280 },
-  { color: "#722ed1", gradient: ["#722ed1", "#531dab"], name: "其他文档", value: 154 },
+  { color: "#1890ff", gradient: ["#1890ff", "#096dd9"], name: "技术文档", value: 2850 },
+  { color: "#52c41a", gradient: ["#52c41a", "#389e0d"], name: "业务文档", value: 2420 },
+  { color: "#fa8c16", gradient: ["#fa8c16", "#d46b08"], name: "设计文档", value: 1880 },
+  { color: "#722ed1", gradient: ["#722ed1", "#531dab"], name: "产品文档", value: 1250 },
+  { color: "#eb2f96", gradient: ["#eb2f96", "#c41d7f"], name: "运营文档", value: 980 },
+  { color: "#13c2c2", gradient: ["#13c2c2", "#08979c"], name: "其他文档", value: 182 },
 ];
 
 // 部门成员分布数据
 const departmentData = [
-  { name: "研发部", 成员: 18 },
-  { name: "产品部", 成员: 12 },
-  { name: "设计部", 成员: 8 },
-  { name: "运营部", 成员: 10 },
+  { name: "研发部", 成员: 48 },
+  { name: "产品部", 成员: 32 },
+  { name: "设计部", 成员: 24 },
+  { name: "运营部", 成员: 28 },
+  { name: "市场部", 成员: 18 },
+  { name: "人事部", 成员: 12 },
+  { name: "财务部", 成员: 10 },
+  { name: "行政部", 成员: 8 },
 ];
-
-// 自定义 Tooltip 样式
-const CustomTooltip = ({ active, label, payload }: ITooltipProps): React.ReactElement | null => {
-  if (active && payload && payload.length) {
-    return (
-      <div
-        style={{
-          backgroundColor: "#fff",
-          border: "1px solid #e8e8e8",
-          borderRadius: 8,
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-          padding: "12px 16px",
-        }}
-      >
-        <p style={{ color: "#1f2937", fontWeight: 600, margin: 0, marginBottom: 8 }}>{label}</p>
-        {payload.map((item, index) => (
-          <p
-            key={index}
-            style={{
-              alignItems: "center",
-              color: item.color,
-              display: "flex",
-              fontSize: 14,
-              gap: 8,
-              margin: 0,
-              marginTop: 4,
-            }}
-          >
-            <span
-              style={{
-                backgroundColor: item.color,
-                borderRadius: "50%",
-                display: "inline-block",
-                height: 8,
-                width: 8,
-              }}
-            />
-            {item.name}: <span style={{ fontWeight: 600 }}>{item.value}</span>
-          </p>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -312,69 +272,143 @@ const Home: React.FC = () => {
             styles={{ body: { padding: "24px" } }}
             title={
               <Title level={5} style={{ color: "#1f2937", fontWeight: 600, margin: 0 }}>
-                最近7天数据趋势
+                最近30天数据趋势
               </Title>
             }
           >
-            <ResponsiveContainer height={320} width="100%">
-              <AreaChart data={last7DaysData} margin={{ bottom: 0, left: 0, right: 30, top: 10 }}>
-                <defs>
-                  <linearGradient id="color文档" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="#1890ff" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#1890ff" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="color条码" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="#52c41a" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#52c41a" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="color访问" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="#fa8c16" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#fa8c16" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  axisLine={{ stroke: "#e8e8e8" }}
-                  dataKey="name"
-                  stroke="#8c8c8c"
-                  tick={{ fill: "#8c8c8c", fontSize: 12 }}
-                />
-                <YAxis axisLine={{ stroke: "#e8e8e8" }} stroke="#8c8c8c" tick={{ fill: "#8c8c8c", fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  formatter={(value) => <span style={{ color: "#595959", fontSize: 12 }}>{value}</span>}
-                  iconType="circle"
-                  wrapperStyle={{ paddingTop: 20 }}
-                />
-                <Area
-                  activeDot={{ r: 7, stroke: "#1890ff", strokeWidth: 2 }}
-                  dataKey="文档"
-                  dot={{ fill: "#1890ff", r: 5, stroke: "#fff", strokeWidth: 2 }}
-                  fill="url(#color文档)"
-                  stroke="#1890ff"
-                  strokeWidth={3}
-                  type="monotone"
-                />
-                <Area
-                  activeDot={{ r: 7, stroke: "#52c41a", strokeWidth: 2 }}
-                  dataKey="条码"
-                  dot={{ fill: "#52c41a", r: 5, stroke: "#fff", strokeWidth: 2 }}
-                  fill="url(#color条码)"
-                  stroke="#52c41a"
-                  strokeWidth={3}
-                  type="monotone"
-                />
-                <Area
-                  activeDot={{ r: 7, stroke: "#fa8c16", strokeWidth: 2 }}
-                  dataKey="访问"
-                  dot={{ fill: "#fa8c16", r: 5, stroke: "#fff", strokeWidth: 2 }}
-                  fill="url(#color访问)"
-                  stroke="#fa8c16"
-                  strokeWidth={3}
-                  type="monotone"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <ReactECharts
+              option={{
+                animation: true,
+                animationDuration: 1000,
+                animationEasing: "cubicOut",
+                tooltip: {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  borderColor: "#e8e8e8",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  padding: [12, 16],
+                  textStyle: { color: "#1f2937", fontSize: 14 },
+                  trigger: "axis",
+                  axisPointer: {
+                    type: "cross",
+                    label: { backgroundColor: "#6a7985" },
+                  },
+                },
+                legend: {
+                  data: ["访问", "条码", "文档"],
+                  textStyle: { color: "#595959", fontSize: 12 },
+                  top: 10,
+                  itemGap: 20,
+                },
+                grid: {
+                  left: "3%",
+                  right: "4%",
+                  bottom: "15%",
+                  top: "15%",
+                  containLabel: true,
+                },
+                xAxis: {
+                  data: last30DaysData.map((item) => item.name),
+                  type: "category",
+                  boundaryGap: false,
+                  axisLine: { lineStyle: { color: "#e8e8e8" } },
+                  axisLabel: { color: "#8c8c8c", fontSize: 11, rotate: 45, interval: 0 },
+                  axisTick: { show: false },
+                },
+                yAxis: {
+                  type: "value",
+                  axisLine: { lineStyle: { color: "#e8e8e8" } },
+                  axisLabel: { color: "#8c8c8c", fontSize: 12 },
+                  splitLine: { lineStyle: { color: "#f0f0f0", type: "dashed" } },
+                },
+                series: [
+                  {
+                    name: "访问",
+                    type: "line",
+                    smooth: true,
+                    data: last30DaysData.map((item) => item.访问),
+                    areaStyle: {
+                      color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                          { offset: 0, color: "rgba(250, 140, 22, 0.4)" },
+                          { offset: 1, color: "rgba(250, 140, 22, 0)" },
+                        ],
+                      },
+                    },
+                    itemStyle: { color: "#fa8c16" },
+                    lineStyle: { color: "#fa8c16", width: 3 },
+                    symbol: "circle",
+                    symbolSize: 6,
+                    emphasis: {
+                      focus: "series",
+                      itemStyle: { borderColor: "#fff", borderWidth: 2 },
+                    },
+                  },
+                  {
+                    name: "条码",
+                    type: "line",
+                    smooth: true,
+                    data: last30DaysData.map((item) => item.条码),
+                    areaStyle: {
+                      color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                          { offset: 0, color: "rgba(82, 196, 26, 0.4)" },
+                          { offset: 1, color: "rgba(82, 196, 26, 0)" },
+                        ],
+                      },
+                    },
+                    itemStyle: { color: "#52c41a" },
+                    lineStyle: { color: "#52c41a", width: 3 },
+                    symbol: "circle",
+                    symbolSize: 6,
+                    emphasis: {
+                      focus: "series",
+                      itemStyle: { borderColor: "#fff", borderWidth: 2 },
+                    },
+                  },
+                  {
+                    name: "文档",
+                    type: "line",
+                    smooth: true,
+                    data: last30DaysData.map((item) => item.文档),
+                    areaStyle: {
+                      color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                          { offset: 0, color: "rgba(24, 144, 255, 0.4)" },
+                          { offset: 1, color: "rgba(24, 144, 255, 0)" },
+                        ],
+                      },
+                    },
+                    itemStyle: { color: "#1890ff" },
+                    lineStyle: { color: "#1890ff", width: 3 },
+                    symbol: "circle",
+                    symbolSize: 6,
+                    emphasis: {
+                      focus: "series",
+                      itemStyle: { borderColor: "#fff", borderWidth: 2 },
+                    },
+                  },
+                ],
+              }}
+              opts={{ renderer: "svg" }}
+              style={{ height: "400px", width: "100%" }}
+            />
           </Card>
         </Col>
 
@@ -389,50 +423,85 @@ const Home: React.FC = () => {
               </Title>
             }
           >
-            <ResponsiveContainer height={240} width="100%">
-              <PieChart>
-                <defs>
-                  {documentCategoryData.map((item, index) => (
-                    <linearGradient key={index} id={`pieGradient${index}`} x1="0" x2="1" y1="0" y2="1">
-                      <stop offset="0%" stopColor={item.gradient[0]} stopOpacity={1} />
-                      <stop offset="100%" stopColor={item.gradient[1]} stopOpacity={1} />
-                    </linearGradient>
-                  ))}
-                </defs>
-                <Pie
-                  cx="50%"
-                  cy="50%"
-                  data={documentCategoryData}
-                  dataKey="value"
-                  fill="#8884d8"
-                  innerRadius={60}
-                  label={({ name, percent }) => {
-                    if (percent && percent < 0.05) {
-                      return "";
-                    }
-                    return `${name}\n${percent ? (percent * 100).toFixed(0) : 0}%`;
-                  }}
-                  labelLine={false}
-                  outerRadius={90}
-                  paddingAngle={4}
-                >
-                  {documentCategoryData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={`url(#pieGradient${index})`} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    border: "1px solid #f0f0f0",
-                    borderRadius: 8,
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                  }}
-                  formatter={(value: number | undefined) => {
-                    const val = value ?? 0;
-                    return [`${val} 个`, "数量"];
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <ReactECharts
+              option={{
+                animation: true,
+                animationDuration: 1000,
+                animationEasing: "cubicOut",
+                tooltip: {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  borderColor: "#e8e8e8",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  padding: [12, 16],
+                  textStyle: { color: "#1f2937", fontSize: 14 },
+                  formatter: "{b}: {c} 个 ({d}%)",
+                },
+                series: [
+                  {
+                    name: "文档分类",
+                    type: "pie",
+                    radius: ["40%", "70%"],
+                    center: ["50%", "50%"],
+                    avoidLabelOverlap: true,
+                    itemStyle: {
+                      borderRadius: 4,
+                      borderColor: "#fff",
+                      borderWidth: 2,
+                    },
+                    label: {
+                      show: true,
+                      formatter: (params: { name: string; percent?: number }) => {
+                        if (params.percent && params.percent < 5) {
+                          return "";
+                        }
+                        return `${params.name}\n${params.percent ? params.percent.toFixed(0) : 0}%`;
+                      },
+                      fontSize: 12,
+                      color: "#595959",
+                    },
+                    labelLine: {
+                      show: false,
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: 14,
+                        fontWeight: "bold",
+                      },
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: "rgba(0, 0, 0, 0.3)",
+                      },
+                    },
+                    data: documentCategoryData.map((item) => ({
+                      name: item.name,
+                      value: item.value,
+                      itemStyle: {
+                        color: {
+                          type: "linear",
+                          x: 0,
+                          y: 0,
+                          x2: 1,
+                          y2: 1,
+                          colorStops: [
+                            { offset: 0, color: item.gradient[0] },
+                            { offset: 1, color: item.gradient[1] },
+                          ],
+                        },
+                      },
+                    })),
+                    animationType: "scale",
+                    animationEasing: "elasticOut",
+                    animationDelay: (idx: number) => idx * 100,
+                  },
+                ],
+              }}
+              opts={{ renderer: "svg" }}
+              style={{ height: "240px", width: "100%" }}
+            />
             <div style={{ marginTop: 24, textAlign: "center" }}>
               <Statistic
                 suffix="个"
@@ -457,43 +526,88 @@ const Home: React.FC = () => {
               </Title>
             }
           >
-            <ResponsiveContainer height={320} width="100%">
-              <BarChart data={departmentData} margin={{ bottom: 5, left: 20, right: 30, top: 20 }}>
-                <defs>
-                  <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#722ed1" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#9254de" stopOpacity={0.8} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  axisLine={{ stroke: "#e8e8e8" }}
-                  dataKey="name"
-                  stroke="#8c8c8c"
-                  tick={{ fill: "#8c8c8c", fontSize: 12 }}
-                />
-                <YAxis axisLine={{ stroke: "#e8e8e8" }} stroke="#8c8c8c" tick={{ fill: "#8c8c8c", fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #e8e8e8",
-                    borderRadius: 8,
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                    padding: "12px 16px",
-                  }}
-                  formatter={(value: number | undefined) => {
-                    const val = value ?? 0;
-                    return [`${val} 人`, "成员数"];
-                  }}
-                  labelStyle={{ color: "#1f2937", fontWeight: 600, marginBottom: 8 }}
-                />
-                <Bar dataKey="成员" fill="url(#barGradient)" maxBarSize={80} radius={[8, 8, 0, 0]}>
-                  {departmentData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill="url(#barGradient)" />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ReactECharts
+              option={{
+                animation: true,
+                animationDuration: 1000,
+                animationEasing: "cubicOut",
+                tooltip: {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  borderColor: "#e8e8e8",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  padding: [12, 16],
+                  textStyle: { color: "#1f2937", fontSize: 14 },
+                  formatter: (params: { name: string; value: number }) => {
+                    return `${params.name}<br/>成员数: ${params.value} 人`;
+                  },
+                  trigger: "axis",
+                  axisPointer: {
+                    type: "shadow",
+                  },
+                },
+                grid: {
+                  left: "3%",
+                  right: "4%",
+                  bottom: "3%",
+                  top: "5%",
+                  containLabel: true,
+                },
+                xAxis: {
+                  data: departmentData.map((item) => item.name),
+                  type: "category",
+                  axisLine: { lineStyle: { color: "#e8e8e8" } },
+                  axisLabel: { color: "#8c8c8c", fontSize: 12 },
+                  axisTick: { show: false },
+                },
+                yAxis: {
+                  type: "value",
+                  axisLine: { lineStyle: { color: "#e8e8e8" } },
+                  axisLabel: { color: "#8c8c8c", fontSize: 12 },
+                  splitLine: { lineStyle: { color: "#f0f0f0", type: "dashed" } },
+                },
+                series: [
+                  {
+                    name: "成员数",
+                    type: "bar",
+                    data: departmentData.map((item) => item.成员),
+                    barWidth: "60%",
+                    itemStyle: {
+                      color: {
+                        type: "linear",
+                        x: 0,
+                        y: 0,
+                        x2: 0,
+                        y2: 1,
+                        colorStops: [
+                          { offset: 0, color: "#722ed1" },
+                          { offset: 1, color: "#9254de" },
+                        ],
+                      },
+                      borderRadius: [8, 8, 0, 0],
+                    },
+                    emphasis: {
+                      itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: "rgba(114, 46, 209, 0.5)",
+                      },
+                    },
+                    label: {
+                      show: true,
+                      position: "top",
+                      color: "#722ed1",
+                      fontSize: 12,
+                      fontWeight: 600,
+                    },
+                    animationDelay: (idx: number) => idx * 100,
+                  },
+                ],
+              }}
+              opts={{ renderer: "svg" }}
+              style={{ height: "400px", width: "100%" }}
+            />
           </Card>
         </Col>
       </Row>
