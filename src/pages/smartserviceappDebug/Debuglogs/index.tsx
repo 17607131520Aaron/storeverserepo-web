@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   ClearOutlined,
@@ -25,7 +25,8 @@ const JsonValue: React.FC<{
   parentKey?: string;
   value: unknown;
 }> = ({ level = 0, parentKey: _parentKey, value }) => {
-  const [isExpanded, setIsExpanded] = useState(level < 2); // 默认展开前 2 层
+  // 根节点默认折叠，子节点展开 2 层，整体效果更接近 Chrome 控制台
+  const [isExpanded, setIsExpanded] = useState(level > 0 && level < 3);
 
   const indent = level * 16;
 
@@ -150,50 +151,102 @@ const JsonValue: React.FC<{
   return <span>{String(value)}</span>;
 };
 
-// JSON 折叠查看组件（类似 Chrome DevTools）
+// JSON 折叠查看组件（类似 Chrome DevTools），支持一条日志里“对象 + 追加文本”的形式
 const CollapsibleJson: React.FC<{ message: string }> = ({ message }) => {
-  const [jsonData, setJsonData] = useState<{ isValid: boolean; parsed: unknown; jsonString: string } | null>(null);
+  type Segment = { type: "text"; text: string } | { type: "json"; parsed: unknown; raw: string };
 
-  // 检测是否是 JSON 格式
+  const [segments, setSegments] = useState<Segment[] | null>(null);
+
   React.useEffect(() => {
     const trimmed = message.trim();
 
-    // 检查是否以 { 或 [ 开头，可能是 JSON
-    if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
-      try {
-        // 尝试解析为 JSON
-        const parsed = JSON.parse(trimmed);
-        setJsonData({ isValid: true, parsed, jsonString: trimmed });
-      } catch {
-        // 不是有效 JSON
-        setJsonData({ isValid: false, parsed: null, jsonString: "" });
-      }
-    } else {
-      // 尝试查找消息中的 JSON 部分（以 { 或 [ 开头）
-      const jsonMatch = trimmed.match(/(\{.*\}|\[.*\])/s);
-      if (jsonMatch) {
+    // 空字符串直接渲染
+    if (!trimmed) {
+      setSegments([{ type: "text", text: "" }]);
+      return;
+    }
+
+    // 优先处理这种格式：`<json><空格或换行><其它内容>`
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      // 贪婪匹配：从第一个 {/[ 一直找到最后一个 }/]
+      const greedyMatch = trimmed.match(/^(\{[\s\S]*\}|\[[\s\S]*\])(.*)$/);
+      if (greedyMatch) {
+        const [, jsonPart, restPart] = greedyMatch;
         try {
-          const jsonStr = jsonMatch[1];
-          const parsed = JSON.parse(jsonStr);
-          setJsonData({ isValid: true, parsed, jsonString: jsonStr });
+          const parsed = JSON.parse(jsonPart);
+          const segs: Segment[] = [{ type: "json", parsed, raw: jsonPart }];
+          if (restPart && restPart.trim()) {
+            segs.push({ type: "text", text: restPart });
+          }
+          setSegments(segs);
+          return;
         } catch {
-          setJsonData({ isValid: false, parsed: null, jsonString: "" });
+          // 如果整体 JSON 解析失败，退回通用逻辑
         }
-      } else {
-        setJsonData({ isValid: false, parsed: null, jsonString: "" });
       }
     }
+
+    // 通用逻辑：在整条 message 中查找第一个 JSON 片段
+    const firstBraceIndex = message.search(/(\{|\[)/);
+    if (firstBraceIndex === -1) {
+      setSegments([{ type: "text", text: message }]);
+      return;
+    }
+
+    const before = message.slice(0, firstBraceIndex);
+    const after = message.slice(firstBraceIndex);
+
+    // 贪婪匹配 JSON 片段
+    const jsonMatch = after.match(/^(\{[\s\S]*\}|\[[\s\S]*\])(.*)$/);
+    if (jsonMatch) {
+      const [, jsonPart, restPart] = jsonMatch;
+      try {
+        const parsed = JSON.parse(jsonPart);
+        const segs: Segment[] = [];
+        if (before) {
+          segs.push({ type: "text", text: before });
+        }
+        segs.push({ type: "json", parsed, raw: jsonPart });
+        if (restPart && restPart.trim()) {
+          segs.push({ type: "text", text: restPart });
+        }
+        setSegments(segs);
+        return;
+      } catch {
+        // 解析失败，当普通文本处理
+      }
+    }
+
+    // 找不到合法 JSON，就当作普通文本
+    setSegments([{ type: "text", text: message }]);
   }, [message]);
 
-  // 如果不是有效 JSON，直接显示原文本
-  if (!jsonData || !jsonData.isValid) {
+  if (!segments) {
     return <span>{message}</span>;
   }
 
+  // 只有一个 JSON 片段，且整条就是它：直接用 JSON 折叠视图（接近 DevTools）
+  if (segments.length === 1 && segments[0].type === "json" && message.trim() === segments[0].raw.trim()) {
+    return (
+      <span className="chrome-like-json">
+        <JsonValue level={0} value={segments[0].parsed} />
+      </span>
+    );
+  }
+
+  // 多段：文本 + JSON + 文本，保证 JSON 和后缀文本在同一行渲染
   return (
-    <div className="chrome-like-json">
-      <JsonValue level={0} value={jsonData.parsed} />
-    </div>
+    <span>
+      {segments.map((seg, index) =>
+        seg.type === "text" ? (
+          <span key={index}>{seg.text}</span>
+        ) : (
+          <span key={index} className="chrome-like-json" style={{ marginLeft: 4 }}>
+            <JsonValue level={0} value={seg.parsed} />
+          </span>
+        ),
+      )}
+    </span>
   );
 };
 
@@ -222,6 +275,24 @@ const RNDebugLogs: React.FC = () => {
     handlePause,
     handleClose,
   } = useDebuglogs();
+
+  // 日志容器 ref，用于实现新日志时自动滚动到底部
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // 当日志变化且未暂停时，自动滚动到底部（类似 Chrome 控制台）
+  useEffect(() => {
+    if (isPaused) {
+      return;
+    }
+    const el = logsContainerRef.current;
+    if (!el) {
+      return;
+    }
+    // 使用 requestAnimationFrame，等 DOM 更新完成后再滚动
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+  }, [filteredLogs, isPaused]);
 
   return (
     <div className="rn-debug-logs">
@@ -315,7 +386,7 @@ const RNDebugLogs: React.FC = () => {
       </Card>
 
       <Card className="rn-debug-logs-content">
-        <div className="rn-debug-logs-container">
+        <div ref={logsContainerRef} className="rn-debug-logs-container">
           {filteredLogs.length === 0 ? (
             <div className="rn-debug-logs-empty">
               <DisconnectOutlined style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }} />
