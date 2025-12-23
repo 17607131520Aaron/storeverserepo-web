@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   ClearOutlined,
   DisconnectOutlined,
+  DownOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
+  RightOutlined,
   StopOutlined,
 } from "@ant-design/icons";
 import { Badge, Button, Card, Input, InputNumber, Select, Space, Spin, Tooltip, Typography } from "antd";
@@ -16,6 +18,184 @@ import "./index.scss";
 
 const { Text } = Typography;
 const { Search } = Input;
+
+// 递归渲染 JSON 值的组件（类似 Chrome DevTools）
+const JsonValue: React.FC<{
+  level?: number;
+  parentKey?: string;
+  value: unknown;
+}> = ({ level = 0, parentKey: _parentKey, value }) => {
+  const [isExpanded, setIsExpanded] = useState(level < 2); // 默认展开前 2 层
+
+  const indent = level * 16;
+
+  // 字符串
+  if (typeof value === "string") {
+    return <span className="json-string">"{value}"</span>;
+  }
+
+  // 数字
+  if (typeof value === "number") {
+    return <span className="json-number">{value}</span>;
+  }
+
+  // 布尔值
+  if (typeof value === "boolean") {
+    return <span className="json-boolean">{value ? "true" : "false"}</span>;
+  }
+
+  // null
+  if (value === null) {
+    return <span className="json-null">null</span>;
+  }
+
+  // undefined
+  if (value === undefined) {
+    return <span className="json-undefined">undefined</span>;
+  }
+
+  // 数组
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return (
+        <span>
+          <span className="json-bracket">[</span>
+          <span className="json-bracket">]</span>
+        </span>
+      );
+    }
+
+    const preview = value.length === 1 ? "1 item" : `${value.length} items`;
+
+    return (
+      <span>
+        <span
+          className="json-toggle"
+          style={{ cursor: "pointer", userSelect: "none", marginRight: 4 }}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? <DownOutlined style={{ fontSize: 10 }} /> : <RightOutlined style={{ fontSize: 10 }} />}
+        </span>
+        <span className="json-bracket">[</span>
+        {isExpanded ? (
+          <>
+            <div style={{ marginLeft: indent + 16 }}>
+              {value.map((item, index) => (
+                <div key={index} className="json-line">
+                  <JsonValue level={level + 1} value={item} />
+                  {index < value.length - 1 && <span className="json-comma">,</span>}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginLeft: indent }}>
+              <span className="json-bracket">]</span>
+            </div>
+          </>
+        ) : (
+          <span className="json-preview">{preview}</span>
+        )}
+        {!isExpanded && <span className="json-bracket">]</span>}
+      </span>
+    );
+  }
+
+  // 对象
+  if (typeof value === "object") {
+    const entries = Object.entries(value);
+    if (entries.length === 0) {
+      return (
+        <span>
+          <span className="json-brace">{`{`}</span>
+          <span className="json-brace">{`}`}</span>
+        </span>
+      );
+    }
+
+    const preview = entries.length === 1 ? "1 property" : `${entries.length} properties`;
+
+    return (
+      <span>
+        <span
+          className="json-toggle"
+          style={{ cursor: "pointer", userSelect: "none", marginRight: 4 }}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? <DownOutlined style={{ fontSize: 10 }} /> : <RightOutlined style={{ fontSize: 10 }} />}
+        </span>
+        <span className="json-brace">{`{`}</span>
+        {isExpanded ? (
+          <>
+            <div style={{ marginLeft: indent + 16 }}>
+              {entries.map(([key, val], index) => (
+                <div key={key} className="json-line">
+                  <span className="json-key">"{key}"</span>
+                  <span className="json-colon">: </span>
+                  <JsonValue level={level + 1} parentKey={key} value={val} />
+                  {index < entries.length - 1 && <span className="json-comma">,</span>}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginLeft: indent }}>
+              <span className="json-brace">{`}`}</span>
+            </div>
+          </>
+        ) : (
+          <span className="json-preview">{preview}</span>
+        )}
+        {!isExpanded && <span className="json-brace">{`}`}</span>}
+      </span>
+    );
+  }
+
+  return <span>{String(value)}</span>;
+};
+
+// JSON 折叠查看组件（类似 Chrome DevTools）
+const CollapsibleJson: React.FC<{ message: string }> = ({ message }) => {
+  const [jsonData, setJsonData] = useState<{ isValid: boolean; parsed: unknown; jsonString: string } | null>(null);
+
+  // 检测是否是 JSON 格式
+  React.useEffect(() => {
+    const trimmed = message.trim();
+
+    // 检查是否以 { 或 [ 开头，可能是 JSON
+    if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+      try {
+        // 尝试解析为 JSON
+        const parsed = JSON.parse(trimmed);
+        setJsonData({ isValid: true, parsed, jsonString: trimmed });
+      } catch {
+        // 不是有效 JSON
+        setJsonData({ isValid: false, parsed: null, jsonString: "" });
+      }
+    } else {
+      // 尝试查找消息中的 JSON 部分（以 { 或 [ 开头）
+      const jsonMatch = trimmed.match(/(\{.*\}|\[.*\])/s);
+      if (jsonMatch) {
+        try {
+          const jsonStr = jsonMatch[1];
+          const parsed = JSON.parse(jsonStr);
+          setJsonData({ isValid: true, parsed, jsonString: jsonStr });
+        } catch {
+          setJsonData({ isValid: false, parsed: null, jsonString: "" });
+        }
+      } else {
+        setJsonData({ isValid: false, parsed: null, jsonString: "" });
+      }
+    }
+  }, [message]);
+
+  // 如果不是有效 JSON，直接显示原文本
+  if (!jsonData || !jsonData.isValid) {
+    return <span>{message}</span>;
+  }
+
+  return (
+    <div className="chrome-like-json">
+      <JsonValue level={0} value={jsonData.parsed} />
+    </div>
+  );
+};
 
 // 连接模式选项
 const connectionModeOptions = [
@@ -171,7 +351,10 @@ const RNDebugLogs: React.FC = () => {
                   [{log.level.toUpperCase()}]
                 </span>
                 <span className="rn-debug-logs-message">
-                  {new Date(log.timestamp).toLocaleTimeString()} - {log.message}
+                  <span style={{ color: "#858585", marginRight: 8 }}>
+                    {new Date(log.timestamp).toLocaleTimeString()} -
+                  </span>
+                  <CollapsibleJson message={log.message} />
                 </span>
               </div>
             ))

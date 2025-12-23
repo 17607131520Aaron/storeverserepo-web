@@ -151,6 +151,73 @@
   }
 }
 
+// Chrome DevTools 风格的 JSON 查看器
+.chrome-like-json {
+  display: inline-block;
+  font-size: 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  line-height: 1.5;
+  color: #d4d4d4;
+
+  .json-line {
+    min-height: 18px;
+    line-height: 18px;
+  }
+
+  .json-toggle {
+    display: inline-block;
+    width: 12px;
+    color: #858585;
+    vertical-align: middle;
+    text-align: center;
+
+    &:hover {
+      color: #d4d4d4;
+    }
+  }
+
+  .json-key {
+    color: #9cdcfe; // 蓝色，类似 Chrome
+  }
+
+  .json-string {
+    color: #ce9178; // 橙色，字符串
+  }
+
+  .json-number {
+    color: #b5cea8; // 绿色，数字
+  }
+
+  .json-boolean {
+    color: #569cd6; // 浅蓝色，布尔值
+  }
+
+  .json-null,
+  .json-undefined {
+    color: #569cd6; // 浅蓝色，null/undefined
+  }
+
+  .json-brace,
+  .json-bracket {
+    color: #d4d4d4; // 白色，括号
+  }
+
+  .json-colon {
+    margin: 0 4px;
+    color: #d4d4d4;
+  }
+
+  .json-comma {
+    color: #d4d4d4;
+  }
+
+  .json-preview {
+    margin: 0 4px;
+    color: #858585;
+    font-style: italic;
+  }
+}
+
 // 响应式调整
 @media (width <= 768px) {
   .rn-debug-logs {
