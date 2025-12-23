@@ -13,9 +13,9 @@ export const levelOptions: SelectProps["options"] = [
 ];
 
 /**
- * 默认端口
+ * 默认端口（日志服务器端口）
  */
-export const DEFAULT_PORT = 8081;
+export const DEFAULT_PORT = 8082;
 
 /**
  * 默认最大日志数量

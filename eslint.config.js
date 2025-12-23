@@ -19,6 +19,7 @@ export default [
       "coverage",
       "public/**",
       "config/**",
+      "scripts/**",
       ".stylelintrc",
       ".prettierrc",
       ".lintstagedrc.js",

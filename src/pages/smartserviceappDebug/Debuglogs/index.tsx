@@ -143,8 +143,22 @@ const RNDebugLogs: React.FC = () => {
                 {isConnected ? "已连接，等待日志输出..." : "未连接，请点击连接按钮连接到 Metro bundler"}
               </Text>
               <Text style={{ fontSize: "12px", marginTop: 8 }} type="secondary">
-                默认端口: {DEFAULT_PORT}
+                默认端口: {DEFAULT_PORT} (日志服务器)
               </Text>
+              {isConnected && (
+                <div style={{ marginTop: 16, padding: 12, background: "#fff3cd", borderRadius: 4, maxWidth: 600 }}>
+                  <Text strong style={{ fontSize: "12px", color: "#856404" }}>
+                    提示：
+                  </Text>
+                  <Text style={{ fontSize: "12px", color: "#856404", display: "block", marginTop: 4 }}>
+                    React Native 的 console.log 默认不会自动通过 Metro bundler 的 logger WebSocket 发送。
+                    <br />
+                    如需捕获 JS 日志，请在 React Native 应用中添加日志拦截器来转发 console.log 输出。
+                    <br />
+                    可参考 storeverserepo-app/src/utils/devWsLogger.ts 的实现方式。
+                  </Text>
+                </div>
+              )}
             </div>
           ) : (
             filteredLogs.map((log) => (
