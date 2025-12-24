@@ -68,7 +68,7 @@ export const useDebuglogs = (): {
       return "";
     }
     // 使用指定端口（默认 8082）
-    return `ws://192.168.1.2:${port}/logs`;
+    return `ws://172.23.101.246:${port}/logs`;
   }, [port, shouldConnect]);
 
   // 用于记录是否已经记录过连接日志，避免重复记录
