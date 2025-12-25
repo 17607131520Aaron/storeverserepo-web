@@ -4,8 +4,6 @@ import {
   ClearOutlined,
   DisconnectOutlined,
   DownOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
   ReloadOutlined,
   RightOutlined,
   StopOutlined,
@@ -13,7 +11,7 @@ import {
 import { Badge, Button, Card, Input, InputNumber, Select, Space, Spin, Tooltip, Typography } from "antd";
 
 import { DEFAULT_PORT, getLogLevelColor, levelOptions } from "./constants";
-import { useDebuglogs, type ConnectionMode } from "./useDebuglogs";
+import { useDebuglogs } from "./useDebuglogs";
 import "./index.scss";
 
 const { Text } = Typography;
@@ -250,21 +248,12 @@ const CollapsibleJson: React.FC<{ message: string }> = ({ message }) => {
   );
 };
 
-// 连接模式选项
-const connectionModeOptions = [
-  { label: "ADB", value: "adb" },
-  { label: "WebSocket", value: "websocket" },
-];
-
 const RNDebugLogs: React.FC = () => {
   const {
     port,
     setPort,
-    connectionMode,
-    setConnectionMode,
     isConnecting,
     isConnected,
-    isPaused,
     levelFilter,
     setLevelFilter,
     searchText,
@@ -272,18 +261,14 @@ const RNDebugLogs: React.FC = () => {
     filteredLogs,
     handleConnectClick,
     handleClearLogs,
-    handlePause,
     handleClose,
   } = useDebuglogs();
 
   // 日志容器 ref，用于实现新日志时自动滚动到底部
   const logsContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // 当日志变化且未暂停时，自动滚动到底部（类似 Chrome 控制台）
+  // 当日志变化时，自动滚动到底部（类似 Chrome 控制台）
   useEffect(() => {
-    if (isPaused) {
-      return;
-    }
     const el = logsContainerRef.current;
     if (!el) {
       return;
@@ -292,7 +277,7 @@ const RNDebugLogs: React.FC = () => {
     requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
-  }, [filteredLogs, isPaused]);
+  }, [filteredLogs]);
 
   return (
     <div className="rn-debug-logs">
@@ -327,29 +312,9 @@ const RNDebugLogs: React.FC = () => {
           </Space>
 
           <Space>
-            <Text strong>连接模式：</Text>
-            <Select
-              options={connectionModeOptions}
-              style={{ width: 120 }}
-              value={connectionMode}
-              onChange={(value: ConnectionMode) => setConnectionMode(value)}
-            />
-          </Space>
-
-          <Space>
             <Tooltip title="连接">
               <Button icon={<ReloadOutlined />} loading={isConnecting} type="primary" onClick={handleConnectClick}>
                 {isConnected ? "重连" : "连接"}
-              </Button>
-            </Tooltip>
-
-            <Tooltip title={isPaused ? "恢复" : "暂停"}>
-              <Button
-                disabled={!isConnected}
-                icon={isPaused ? <PlayCircleOutlined /> : <PauseCircleOutlined />}
-                onClick={handlePause}
-              >
-                {isPaused ? "恢复" : "暂停"}
               </Button>
             </Tooltip>
 
