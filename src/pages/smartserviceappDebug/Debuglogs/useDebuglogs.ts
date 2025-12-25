@@ -34,8 +34,12 @@ export const useDebuglogs = (): {
     if (!shouldConnect) {
       return "";
     }
+    // 从环境变量获取 WebSocket 服务器地址，如果没有则使用当前主机
+    const wsHost = import.meta.env.VITE_WS_URL
+      ? new URL(import.meta.env.VITE_WS_URL).hostname
+      : window.location.hostname;
     // 使用指定端口（默认 8082）
-    return `ws://172.23.101.246:${port}/logs`;
+    return `ws://${wsHost}:${port}/logs`;
   }, [port, shouldConnect]);
 
   // 用于记录是否已经记录过连接日志，避免重复记录
