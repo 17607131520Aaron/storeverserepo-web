@@ -2,6 +2,7 @@ import { notification } from "antd";
 import request from "axios";
 
 import type { IErrorMessage, IRequestConfig, IResponse } from "@/types/baseRequest";
+import { getProjectInfo, deleteProjectInfo } from "@/utils/indexedDBStorage";
 
 import type { AxiosResponse, InternalAxiosRequestConfig, AxiosError } from "axios";
 
@@ -20,11 +21,12 @@ const instance = request.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
-    if (token) {
+  async (config: InternalAxiosRequestConfig) => {
+    // 从 IndexedDB 读取 token
+    const authInfo = await getProjectInfo<{ token: string; user: unknown; expiresAt: number | null }>("auth_info");
+    if (authInfo?.token) {
       config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${authInfo.token}`;
     }
     return config;
   },
@@ -65,8 +67,9 @@ const handleError = (status: number, data: IResponse): void => {
     401: {
       message: "提示",
       description: "登录超时，请重新登录",
-      action: () => {
-        localStorage.removeItem("token");
+      action: async () => {
+        // 清除 IndexedDB 中的登录信息
+        await deleteProjectInfo("auth_info");
         window.location.href = "/login";
       },
     },

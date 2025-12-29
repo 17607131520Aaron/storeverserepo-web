@@ -33,5 +33,5 @@ export interface IResponse<T = unknown> {
 export interface IErrorMessage {
   message: string;
   description: string;
-  action?: () => void;
+  action?: () => void | Promise<void>;
 }

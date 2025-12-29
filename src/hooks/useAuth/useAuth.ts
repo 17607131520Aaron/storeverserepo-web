@@ -68,14 +68,6 @@ const useAuth = (): IUseAuthResult => {
             user: stored.user ?? null,
             expiresAt,
           });
-          // 同步 token 到 localStorage（request.ts 的拦截器会读取）
-          if (stored.token) {
-            try {
-              localStorage.setItem("token", stored.token);
-            } catch (error) {
-              console.warn("同步 token 到 localStorage 失败（已忽略）：", error);
-            }
-          }
           // 同步用户信息到 store（不包括 token）
           if (stored.user) {
             setStoreUser(stored.user as IUserInfo);
@@ -127,13 +119,6 @@ const useAuth = (): IUseAuthResult => {
     }
 
     setState({ token: null, user: null, expiresAt: null });
-
-    // 清除 localStorage 中的 token
-    try {
-      localStorage.removeItem("token");
-    } catch (error) {
-      console.warn("清除 localStorage token 失败（已忽略）：", error);
-    }
 
     // 清除 IndexedDB 中的登录信息
     try {

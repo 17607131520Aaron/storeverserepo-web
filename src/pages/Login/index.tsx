@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import { Alert, Button, Form, Input, Typography, Tabs, message } from "antd";
 
-import { login as loginApi, register as registerApi } from "@/api/user";
+import { login as loginApi, register as registerApi, getUserInfo } from "@/api/user";
 import useAuth from "@/hooks/useAuth";
 
 import "./index.scss";
@@ -56,14 +56,19 @@ const LoginPage: React.FC = () => {
         password: values.password,
       });
 
-      // 保存 token 到 localStorage（request.ts 的拦截器会读取）
-      localStorage.setItem("token", response.token);
+      // 获取完整的用户信息
+      const userInfo = await getUserInfo();
 
       // 计算过期时间（expiresIn 是秒数，转换为毫秒时间戳）
       const expiresAtMs: number = Date.now() + response.expiresIn * 1000;
 
-      // 保存用户信息和 token 到 useAuth
-      const userPayload = { username: values.username };
+      // 保存用户信息和 token 到 useAuth（会自动保存到 IndexedDB）
+      const userPayload = {
+        id: userInfo.id,
+        username: userInfo.username,
+        email: userInfo.email,
+        phone: userInfo.phone,
+      };
       await login(response.token, userPayload, expiresAtMs);
 
       const redirectPath: string = location.state?.from?.pathname ?? "/";
@@ -89,11 +94,34 @@ const LoginPage: React.FC = () => {
         phone: values.phone,
       });
 
-      message.success("注册成功！请登录");
-      // 切换到登录标签页，并填充用户名
-      setActiveTab("login");
-      loginForm.setFieldsValue({ username: values.username });
-      registerForm.resetFields();
+      message.success("注册成功！正在自动登录...");
+
+      // 注册成功后自动登录
+      const loginResponse = await loginApi({
+        username: values.username,
+        password: values.password,
+      });
+
+      // 获取完整的用户信息
+      const userInfo = await getUserInfo();
+
+      // 计算过期时间（expiresIn 是秒数，转换为毫秒时间戳）
+      const expiresAtMs: number = Date.now() + loginResponse.expiresIn * 1000;
+
+      // 保存用户信息和 token 到 useAuth（会自动保存到 IndexedDB）
+      const userPayload = {
+        id: userInfo.id,
+        username: userInfo.username,
+        email: userInfo.email,
+        phone: userInfo.phone,
+      };
+      await login(loginResponse.token, userPayload, expiresAtMs);
+
+      message.success("登录成功！");
+
+      // 跳转到目标页面
+      const redirectPath: string = location.state?.from?.pathname ?? "/";
+      navigate(redirectPath, { replace: true });
 
       // TODO没有服务端的时候使用
       // await new Promise((resolve) => setTimeout(resolve, 600));
