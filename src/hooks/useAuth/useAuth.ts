@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { logout as logoutApi } from "@/api/user";
 import { useUserInfoStore, type IUserInfo } from "@/store";
 import { deleteProjectInfo, getProjectInfo, saveProjectInfo } from "@/utils/indexedDBStorage";
 
@@ -67,6 +68,14 @@ const useAuth = (): IUseAuthResult => {
             user: stored.user ?? null,
             expiresAt,
           });
+          // 同步 token 到 localStorage（request.ts 的拦截器会读取）
+          if (stored.token) {
+            try {
+              localStorage.setItem("token", stored.token);
+            } catch (error) {
+              console.warn("同步 token 到 localStorage 失败（已忽略）：", error);
+            }
+          }
           // 同步用户信息到 store（不包括 token）
           if (stored.user) {
             setStoreUser(stored.user as IUserInfo);
@@ -109,7 +118,22 @@ const useAuth = (): IUseAuthResult => {
   );
 
   const logout = useCallback(async (): Promise<void> => {
+    // 调用后端登出接口，撤销 token
+    try {
+      await logoutApi();
+    } catch (error) {
+      // 即使后端登出失败，也继续清理本地状态
+      console.warn("后端登出失败（已忽略）：", error);
+    }
+
     setState({ token: null, user: null, expiresAt: null });
+
+    // 清除 localStorage 中的 token
+    try {
+      localStorage.removeItem("token");
+    } catch (error) {
+      console.warn("清除 localStorage token 失败（已忽略）：", error);
+    }
 
     // 清除 IndexedDB 中的登录信息
     try {
@@ -136,10 +160,7 @@ const useAuth = (): IUseAuthResult => {
     if (!state.token) {
       return false;
     }
-    if (tokenExpired) {
-      return false;
-    }
-    return true;
+    return !tokenExpired;
   }, [state.token, tokenExpired]);
 
   return {

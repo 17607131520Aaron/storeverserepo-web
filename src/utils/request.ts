@@ -10,7 +10,7 @@ interface IBusinessError extends Error {
   isBusinessError: true;
 }
 
-const apiPrefix = import.meta.env.VITE_APP_BASE_API;
+const apiPrefix = import.meta.env.VITE_APP_BASE_API || "api";
 const DEFAULT_TIMEOUT = 5000;
 
 const instance = request.create({
@@ -161,7 +161,7 @@ const requestMethod = async <T, R>(
       if (
         axiosError.code === "ERR_CANCELED" ||
         axiosError.response?.status === 401 ||
-        businessError.isBusinessError === true ||
+        businessError.isBusinessError ||
         attempts > retry
       ) {
         throw error;

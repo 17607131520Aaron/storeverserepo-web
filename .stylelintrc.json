@@ -75,7 +75,7 @@
     "selector-pseudo-class-no-unknown": [
       true,
       {
-        "ignorePseudoClasses": ["input-placeholder"]
+        "ignorePseudoClasses": ["input-placeholder", "global"]
       }
     ],
     "selector-pseudo-element-no-unknown": [

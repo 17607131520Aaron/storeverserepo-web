@@ -156,6 +156,37 @@
   color: #90caf9;
 }
 
+// Tabs 样式定制
+.login-page__card :global(.ant-tabs) {
+  color: #fff;
+}
+
+.login-page__card :global(.ant-tabs-tab) {
+  color: rgb(255 255 255 / 0.65);
+  transition: color 0.3s;
+}
+
+.login-page__card :global(.ant-tabs-tab:hover) {
+  color: rgb(255 255 255 / 0.85);
+}
+
+.login-page__card :global(.ant-tabs-tab-active) {
+  color: #fff;
+}
+
+.login-page__card :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  font-weight: 500;
+  color: #fff;
+}
+
+.login-page__card :global(.ant-tabs-ink-bar) {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+
+.login-page__card :global(.ant-tabs-nav::before) {
+  border-bottom-color: rgb(255 255 255 / 0.16);
+}
+
 @media (width <= 900px) {
   .login-page__content {
     flex-direction: column;

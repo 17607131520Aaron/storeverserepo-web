@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
   // 根据环境动态设置 base
   // 生产环境（GitHub Pages）：使用子路径
   // 测试/开发环境：使用根路径，方便本地部署
-  const base = mode === "production" ? "/storeverserepo-web/" : "/";
+  const base = "/";
 
   return {
     // 部署到 GitHub Pages 的子路径： https://17607131520Aaron.github.io/storeverserepo-web/
