@@ -1,9 +1,14 @@
+// 使用 npx serve 来执行，这样 PM2 可以正确处理
+// npx 会自动找到本地 node_modules 中的 serve，如果不存在会下载
+const serveScript = "npx";
+const serveArgs = "serve -s dist -l 8000";
+
 module.exports = {
   apps: [
     {
       name: "storeverserepo-web",
-      script: "serve",
-      args: "-s dist -l 8000",
+      script: serveScript,
+      args: serveArgs,
       instances: 1,
       exec_mode: "fork",
       watch: false,
