@@ -61,12 +61,23 @@ export const register = (params: IRegisterParams): Promise<string> => {
 };
 
 /**
- * 获取用户信息
+ * 获取当前登录用户信息（需要认证）
  * @returns 用户信息
  */
 export const getUserInfo = (): Promise<IUserInfoResponse> => {
   return get<never, IUserInfoResponse>({
     url: "/userinfo/getUserInfo",
+  });
+};
+
+/**
+ * 通过用户名获取用户信息（无需认证）
+ * @param username 用户名
+ * @returns 用户信息
+ */
+export const getUserInfoByUsername = (username: string): Promise<IUserInfoResponse> => {
+  return get<never, IUserInfoResponse>({
+    url: `/userinfo/getUserInfoByUsername?username=${encodeURIComponent(username)}`,
   });
 };
 

@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import { Alert, Button, Form, Input, Typography, Tabs, message } from "antd";
 
-import { login as loginApi, register as registerApi, getUserInfo } from "@/api/user";
+import { login as loginApi, register as registerApi, getUserInfoByUsername } from "@/api/user";
 import useAuth from "@/hooks/useAuth";
 
 import "./index.scss";
@@ -56,8 +56,8 @@ const LoginPage: React.FC = () => {
         password: values.password,
       });
 
-      // 获取完整的用户信息
-      const userInfo = await getUserInfo();
+      // 通过用户名获取完整的用户信息
+      const userInfo = await getUserInfoByUsername(values.username);
 
       // 计算过期时间（expiresIn 是秒数，转换为毫秒时间戳）
       const expiresAtMs: number = Date.now() + response.expiresIn * 1000;
@@ -102,8 +102,8 @@ const LoginPage: React.FC = () => {
         password: values.password,
       });
 
-      // 获取完整的用户信息
-      const userInfo = await getUserInfo();
+      // 通过用户名获取完整的用户信息
+      const userInfo = await getUserInfoByUsername(values.username);
 
       // 计算过期时间（expiresIn 是秒数，转换为毫秒时间戳）
       const expiresAtMs: number = Date.now() + loginResponse.expiresIn * 1000;
