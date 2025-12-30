@@ -406,6 +406,7 @@ import { util } from "@/utils/util";
 | 部署方式         | 适用场景                   | 端口配置                              | 文档                     |
 | ---------------- | -------------------------- | ------------------------------------- | ------------------------ |
 | **Docker**       | 容器化部署，推荐生产环境   | test: 8001<br>prod: 8000              | [DOCKER.md](./DOCKER.md) |
+| **Podman**       | 容器化部署（Podman 用户）  | dev/test: 8001<br>prod: 8000          | 见下方                   |
 | **Jenkins**      | 传统服务器部署，CI/CD 集成 | dev: 3000<br>test: 3001<br>prod: 3002 | 见下方                   |
 | **GitHub Pages** | 静态站点托管               | -                                     | 见下方                   |
 
@@ -477,6 +478,123 @@ import { util } from "@/utils/util";
 #### 详细文档
 
 完整的 Docker 部署文档请参考：[Docker 部署指南](./DOCKER.md)
+
+### Podman 部署
+
+项目支持通过 Podman 进行多环境部署，适用于使用 Podman 替代 Docker 的场景：
+
+#### 快速部署
+
+```bash
+# 开发/测试环境
+./scripts/podman-deploy.sh dev
+# 或
+./scripts/podman-deploy.sh test
+
+# 生产环境
+./scripts/podman-deploy.sh prod
+```
+
+#### 可用操作
+
+```bash
+# 构建并部署（默认操作）
+./scripts/podman-deploy.sh prod deploy
+# 或简写
+./scripts/podman-deploy.sh prod
+
+# 仅构建镜像
+./scripts/podman-deploy.sh prod build
+
+# 启动容器
+./scripts/podman-deploy.sh prod start
+
+# 停止容器
+./scripts/podman-deploy.sh prod stop
+
+# 重启容器
+./scripts/podman-deploy.sh prod restart
+
+# 查看日志
+./scripts/podman-deploy.sh prod logs
+
+# 查看状态
+./scripts/podman-deploy.sh prod status
+
+# 清理历史镜像
+./scripts/podman-deploy.sh prod clean
+```
+
+#### 环境变量配置
+
+可通过环境变量自定义后端服务地址：
+
+```bash
+# 自定义后端地址（推荐：使用宿主机 IP）
+BACKEND_HOST=192.168.1.100 ./scripts/podman-deploy.sh prod
+
+# 自定义后端端口
+BACKEND_PORT=8888 ./scripts/podman-deploy.sh prod
+
+# 同时设置后端地址和端口
+BACKEND_HOST=192.168.1.100 BACKEND_PORT=9000 ./scripts/podman-deploy.sh prod
+```
+
+#### 访问地址
+
+部署完成后，可通过以下地址访问：
+
+- **开发/测试环境**: `http://localhost:8001`
+- **生产环境**: `http://localhost:8000`
+
+#### 故障排查
+
+**问题：接口无法访问，但本地启动时正常**
+
+这是最常见的问题，原因是容器内的 `localhost` 指向容器本身，无法访问宿主机上的后端服务。
+
+**解决方案（按优先级）：**
+
+1. **使用宿主机 IP（推荐）**
+
+   ```bash
+   # 获取宿主机 IP（macOS/Linux）
+   ifconfig | grep "inet " | grep -v 127.0.0.1
+
+   # 使用 IP 地址部署
+   BACKEND_HOST=192.168.1.100 ./scripts/podman-deploy.sh prod
+   ```
+
+2. **使用 host.containers.internal（Podman 4.0+）**
+   - 脚本会自动将 `localhost` 转换为 `host.containers.internal`
+   - 如果 Podman 版本不支持，请使用方案 1
+
+3. **检查后端服务是否运行**
+
+   ```bash
+   # 检查后端服务是否在运行
+   curl http://localhost:9000/health
+   # 或
+   lsof -i :9000
+   ```
+
+4. **查看容器日志**
+
+   ```bash
+   ./scripts/podman-deploy.sh prod logs
+   ```
+
+5. **检查 Nginx 配置**
+   ```bash
+   # 进入容器查看配置
+   podman exec -it storeverserepo-web-prod cat /etc/nginx/conf.d/default.conf | grep proxy_pass
+   ```
+
+**其他常见问题：**
+
+- **端口被占用**：修改脚本中的 `CONTAINER_PORT` 或停止占用端口的服务
+- **镜像构建失败**：检查网络连接和 Dockerfile 配置
+- **容器启动失败**：查看容器日志 `podman logs storeverserepo-web-prod`
 
 ### Jenkins 部署（不使用 Docker）
 

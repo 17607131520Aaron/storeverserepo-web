@@ -13,6 +13,7 @@ import { Avatar, Dropdown, Input, Layout, List, Menu, Space, Spin, Typography } 
 
 import ThemeToggle from "@/components/ThemeToggle";
 import PerformanceMonitor from "@/hooks/usePerformanceMonitor";
+import { useUserInfoStore } from "@/store";
 
 import { userMenuItems } from "./constants";
 import TabsBar from "./TabsBar";
@@ -42,6 +43,15 @@ const AppContent: React.FC = () => {
     handleOpenChange,
     handleUserMenuClick,
   } = useApp();
+  const { user } = useUserInfoStore();
+
+  // 获取显示的用户名：优先使用真实姓名，如果没有则使用账号
+  const displayName =
+    user && typeof user === "object" && "realName" in user && user.realName
+      ? String(user.realName)
+      : user && typeof user === "object" && "username" in user && user.username
+        ? String(user.username)
+        : "管理员";
 
   return (
     <Layout className="asp-comprehension-home" style={{ height: "100vh", overflow: "hidden" }}>
@@ -160,7 +170,7 @@ const AppContent: React.FC = () => {
                 >
                   <Space className="asp-comprehension-home-header-content-user" style={{ cursor: "pointer" }}>
                     <Avatar icon={<UserOutlined />} size={32} style={{ backgroundColor: "#237ffa" }} />
-                    <Text style={{ fontSize: 14, color: "#595959" }}>管理员</Text>
+                    <Text style={{ fontSize: 14, color: "#595959" }}>{displayName}</Text>
                   </Space>
                 </Dropdown>
               </Space>

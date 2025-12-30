@@ -45,17 +45,13 @@ export default defineConfig(({ mode }) => {
       // 代理配置
       proxy: {
         // API 代理
-        "/api": {
+        [`/${env.VITE_APP_BASE_API || "api"}`]: {
           target: env.VITE_API_BASE_URL || "http://localhost:3000",
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
-          configure: (proxy, _options) => {
-            proxy.on("error", (err, _req, _res) => {
-              console.log("proxy error", err);
-            });
-            proxy.on("proxyReq", (proxyReq, req, _res) => {
-              console.log(`[${req.method}] ${req.url} -> ${proxyReq.path}`);
-            });
+          rewrite: (path) => {
+            const apiPrefix = env.VITE_APP_BASE_API || "api";
+            // 动态移除 API 前缀
+            return path.replace(new RegExp(`^/${apiPrefix}`), "");
           },
         },
         // WebSocket 代理

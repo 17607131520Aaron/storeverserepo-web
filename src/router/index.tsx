@@ -9,6 +9,7 @@ const LayoutHome = lazy(() => import("@/app"));
 const Home = lazy(() => import("@/pages/Home"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 const LoginPage = lazy(() => import("@/pages/Login"));
+const RegisterPage = lazy(() => import("@/pages/Register"));
 
 // Dashboard 模块
 const DashboardOverview = lazy(() => import("@/pages/Dashboard/Overview"));
@@ -40,6 +41,10 @@ const router: DataRouter = createHashRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
   },
   {
     path: "/",

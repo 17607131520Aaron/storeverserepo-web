@@ -22,6 +22,7 @@ export interface ILoginResponse {
 export interface IRegisterParams {
   username: string;
   password: string;
+  realName?: string;
   email?: string;
   phone?: string;
 }
@@ -32,6 +33,7 @@ export interface IRegisterParams {
 export interface IUserInfoResponse {
   id: number;
   username: string;
+  realName: string | null;
   email: string | null;
   phone: string | null;
 }
