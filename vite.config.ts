@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => {
             const apiPrefix = env.VITE_APP_BASE_API || "api";
-            // 动态移除 API 前缀
+            // 只移除 API 前缀，后端会自动添加全局前缀 /storeverserepo/wx
             return path.replace(new RegExp(`^/${apiPrefix}`), "");
           },
         },

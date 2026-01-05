@@ -22,9 +22,17 @@ export interface ILoginResponse {
 export interface IRegisterParams {
   username: string;
   password: string;
-  realName?: string;
+  realName: string;
+  confirmPassword: string;
   email?: string;
   phone?: string;
+}
+
+/**
+ * 注册响应数据
+ */
+export interface IRegisterResponse {
+  message: string;
 }
 
 /**
@@ -55,8 +63,8 @@ export const login = (params: ILoginParams): Promise<ILoginResponse> => {
  * @param params 注册参数
  * @returns 注册结果消息
  */
-export const register = (params: IRegisterParams): Promise<string> => {
-  return post<IRegisterParams, string>({
+export const register = (params: IRegisterParams): Promise<IRegisterResponse> => {
+  return post<IRegisterParams, IRegisterResponse>({
     url: "/userinfo/registerUser",
     data: params,
   });
